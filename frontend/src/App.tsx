@@ -23,7 +23,7 @@ function App() {
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
-          adding michael branch
+          adding nik branch
         </p>
       </div>
       <p className="read-the-docs">
