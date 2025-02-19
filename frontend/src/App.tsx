@@ -1,5 +1,5 @@
 import './App.css'
-import ExploreHeader from './ExploreHeader'
+import ExploreHeader from './components/ExploreHeader'
 
 function App() {
 
