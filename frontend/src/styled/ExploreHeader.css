@@ -1,0 +1,8 @@
+.navbar-pages {
+    padding: 1.5vw;
+    color: white;
+}
+
+.current-page {
+    font-weight: bold;
+}
