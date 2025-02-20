@@ -1,8 +1,33 @@
+@font-face {
+    font-family: 'PBS Sans';
+    font-weight: 400;
+    src: url('https://www-tc.pbs.org/pbsfonts/v1.2/PBSSans.woff2') format('woff2'),
+      url('https://www-tc.pbs.org/pbsfonts/v1.2/PBSSans.woff') format('woff');
+    font-display: swap;
+  }
+
+@font-face {
+    font-family: 'PBS Sans Bold';
+    font-weight: 700;
+    src: url('https://www-tc.pbs.org/pbsfonts/v1.2/PBSSans-Bold.woff2') format('woff2'),
+      url('https://www-tc.pbs.org/pbsfonts/v1.2/PBSSans-Bold.woff') format('woff');
+    font-display: swap;
+}
+
+body {
+    font-size: 1.2rem;
+    font-family: "PBS Sans", serif;
+}
+
 .navbar-pages {
-    padding: 1.5vw;
+    padding: 1.6vw;
     color: white;
 }
 
+#first-page {
+    padding-left: 20%;
+}
+
 .current-page {
-    font-weight: bold;
+    font-family: "PBS Sans Bold", "PBS Sans", serif;
 }

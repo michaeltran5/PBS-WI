@@ -16,7 +16,7 @@ function ExploreHeader() {
                             />
                     </Navbar.Brand>
                     <Nav style={{paddingTop: 20}}>
-                        <Nav.Link className="navbar-pages current-page">Browse</Nav.Link>
+                        <Nav.Link style={{marginLeft: 10}}className="navbar-pages current-page">Browse</Nav.Link>
                         <Nav.Link className="navbar-pages">Live</Nav.Link>
                         <Nav.Link className="navbar-pages">My List</Nav.Link>
                         <Nav.Link className="navbar-pages">Browse by Genre</Nav.Link>
