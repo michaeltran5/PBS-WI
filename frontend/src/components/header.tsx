@@ -7,7 +7,6 @@ import { Search, User } from 'lucide-react';
 
 function Header() {
     return (
-
         <Navbar style={{ backgroundColor: 'transparent', position: 'absolute', width: '100%', zIndex: 1000 }}>
             {/* Navbar component ^ */}
             <Container>
@@ -23,7 +22,7 @@ function Header() {
                 </Navbar.Brand>
                 <Nav className="me-auto">
                     {/* This holds all the different redirection links, will have to redo with actual link names */}
-                    <Nav.Link href="#browse" className="text-white fw-bold me-4">Browse</Nav.Link>
+                    <Nav.Link href="#browse" className="text-white me-4">Browse</Nav.Link>
                     <Nav.Link href="#live" className="text-white me-4">Live</Nav.Link>
                     <Nav.Link href="#mylist" className="text-white me-4">My List</Nav.Link>
                     <Nav.Link href="#genre" className="text-white me-4">Browse by Genre</Nav.Link>
