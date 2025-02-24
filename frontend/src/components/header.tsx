@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 function Header() {
     return (
 
-        <Navbar style={{ backgroundColor: 'transparent', position: 'absolute', width: '100%', zIndex: 1000 }}>
+        <Navbar style={{ backgroundColor: '#2638c4', position: 'fixed', width: '100%', zIndex: 1000 }}>
             {/* Navbar component ^ */}
             <Container>
                 <Navbar.Brand href="#home" className="d-flex align-items-center text-white me-4">
