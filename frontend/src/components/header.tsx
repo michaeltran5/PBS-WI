@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 function Header() {
     return (
 
+
         <Navbar style={{ backgroundColor: '#2638c4', position: 'fixed', width: '100%', zIndex: 1000 }}>
             {/* Navbar component ^ */}
             <Container>
