@@ -1,11 +1,27 @@
-function MediaPlayer() {
-    return (
-      <div style={{ position: 'absolute', top: '80px', left: '20px', zIndex: 1000}}>
-        <span style={{color: 'white', fontSize: '14px'}}>
-          media player
-        </span>
+import React, { useState } from 'react';
+import { VideoPlayer } from '../components/VideoPlayer';
+import { EpisodesList } from '../components/EpisodesList';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const MediaPlayer = () => {
+  const [currentEpisodeId, setCurrentEpisodeId] = useState('c445e87d-40fd-43f1-9ac2-36725d4fea37');
+
+  return (
+    <div className="bg-navy-900 min-h-screen">
+      <div className="px-8 pb-6" style={{ 
+        paddingTop: 'calc(60px + 1.5rem)', 
+        marginTop: '1rem' 
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{ marginLeft: '1.5rem', marginRight: '1.5rem', width: '950px' }}>
+            <VideoPlayer episodeId={currentEpisodeId} />
+          </div>
+          <EpisodesList showId="nova" onEpisodeSelect={setCurrentEpisodeId} 
+          />
+        </div>
       </div>
-    )
-  }
-  
-  export default MediaPlayer
+    </div>
+  );
+};
+
+export default MediaPlayer;

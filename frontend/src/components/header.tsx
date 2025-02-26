@@ -24,8 +24,7 @@ function Header() {
                 </Navbar.Brand>
                 <Nav className="me-auto">
                     {/* This holds all the different redirection links, will have to redo with actual link names */}
-
-                    <Nav.Link as={Link} to="/" className="text-white fw-bold me-4">Browse</Nav.Link>
+                    <Nav.Link as={Link} to="/" className="text-white me-4">Browse</Nav.Link>
                     <Nav.Link href="#live" className="text-white me-4">Live</Nav.Link>
                     <Nav.Link href="#mylist" className="text-white me-4">My List</Nav.Link>
                     <Nav.Link href="#genre" className="text-white me-4">Browse by Genre</Nav.Link>
