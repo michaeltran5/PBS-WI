@@ -98,8 +98,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     
   return (
     <div>
-      <div style={{borderRadius: '8px', overflow: 'hidden'
-      }}>
+      <div style={{borderRadius: '8px', overflow: 'hidden'}}>
         <iframe src={iframeSrc} width="950" height="534" style={{ border: "none" }} 
         allowFullScreen allow="encrypted-media" title={episode.attributes.title}/>
       </div>
@@ -110,7 +109,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <h2 className="text-2xl font-bold">{episode.attributes.title}</h2>
         
         {/*season, show, duration*/}
-        <div className="text-gray-400 mt-2">
+        <div className="mt-2" style={{ fontWeight: 'bold', color: '#ffcf00' }}>
           {seasonNumber !== undefined && episodeNumber !== undefined && (
             <span>Season {seasonNumber} • Episode {episodeNumber}</span>
           )}
@@ -122,7 +121,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           )}
         </div>
         
-        {/*descipriotn*/}
+        {/*description*/}
         <p className="text-gray-200 mt-3 mb-3">
           {description}
         </p>
