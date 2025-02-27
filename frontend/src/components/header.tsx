@@ -11,7 +11,7 @@ import {
     GlobalFontStyle
 } from '../styled/Header.styled';
 
-function Header() {
+const Header: React.FC = () => {
     return (
         <>
             <GlobalFontStyle />
@@ -25,6 +25,7 @@ function Header() {
                             width="82.2"
                             height="50"
                             className="d-inline-block"
+                            style={{ marginTop: '5px' }}
                         />
                     </Navbar.Brand>
 
@@ -63,6 +64,6 @@ function Header() {
             </StyledNavbar>
         </>
     );
-}
+};
 
 export default Header;

@@ -8,16 +8,15 @@ const MediaPlayer = () => {
 
   return (
     <div className="bg-navy-900 min-h-screen">
-      <div className="px-8 pb-6" style={{ 
-        paddingTop: 'calc(60px + 1.5rem)', 
+      <div className="px-8 pb-6" style={{
+        paddingTop: 'calc(60px + 1rem)', 
         marginTop: '1rem' 
       }}>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <div style={{ marginLeft: '1.5rem', marginRight: '1.5rem', width: '950px' }}>
-            <VideoPlayer episodeId={currentEpisodeId} />
-          </div>
-          <EpisodesList showId="nova" onEpisodeSelect={setCurrentEpisodeId} 
-          />
+        <div style={{ marginLeft: '1.5rem', marginRight: '1.5rem', width: '950px', minHeight: '500px' }}>
+          <VideoPlayer episodeId={currentEpisodeId} />
+        </div>
+          <EpisodesList showId="nova" onEpisodeSelect={setCurrentEpisodeId} />
         </div>
       </div>
     </div>
