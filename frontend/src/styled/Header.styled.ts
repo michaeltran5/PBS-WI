@@ -12,7 +12,7 @@ export const StyledNavbar = styled(Navbar)`
   background-color: #2639c3; /* PBS Wisconsin blue */
   padding: 0.25rem 0; /* Reduced padding */
   width: 100%;
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 1000;
   margin-bottom: 0.5rem; /* Add a small margin at the bottom */
@@ -46,9 +46,29 @@ export const NavItem = styled(Nav.Link) <NavItemProps>`
     text-decoration: none !important;
   }
   
+  &::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0.4rem;
+    left: 50%;
+    background-color: white;
+    transition: all 0.3s ease-in-out;
+    transform: translateX(-50%);
+  }
+  
+  &:hover::after {
+    width: 80%;
+  }
+  
   ${props => props.active && `
     color: #f0f0f0;
     font-weight: 700;
+    
+    &::after {
+      width: 80%;
+    }
   `}
 `;
 
@@ -63,6 +83,16 @@ export const DropdownToggle = styled(NavItem)`
     border-right: 0.3em solid transparent;
     border-bottom: 0;
     border-left: 0.3em solid transparent;
+    position: static;
+    width: auto;
+    height: auto;
+    background-color: transparent;
+    transition: none;
+    transform: none;
+  }
+  
+  &:hover::after {
+    width: auto;
   }
 `;
 
