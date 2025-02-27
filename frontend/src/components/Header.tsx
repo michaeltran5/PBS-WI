@@ -28,7 +28,6 @@ const Header: React.FC = () => {
                             style={{ marginTop: '5px' }}
                         />
                     </Navbar.Brand>
-
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         {/* Main Navigation */}
