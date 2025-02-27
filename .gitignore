@@ -11,3 +11,7 @@
 
 # Misc
 .DS_Store
+
+backend/src/config/config.php
+
+backend/public/simple_test.php
