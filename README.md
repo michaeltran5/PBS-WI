@@ -4,7 +4,8 @@ A recommendation engine for PBS Wisconsin's WordPress website to improve user ex
 ## Tech Used:
 
 Web development was done using **React, Typescript, and the Bootstrap framework** to create the user interface.
-The recommendation engine was built using **Machine Learning and AWS Services (S3, Lambda, Personalize)**
+The backend of this application is built using a PHP server.
+The recommendation engine was built using **Machine Learning and AWS (S3, Lambda, Personalize)**
 
 ## PHP Installation with Homebrew
 1. Install Homebrew (if needed): `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
