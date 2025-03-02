@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Asset, APIResponse } from '../types/pbs';
-import { PBS_API } from '../config/constants';
 
 interface VideoPlayerProps {
   episodeId?: string;
@@ -13,17 +12,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  //fetch episode asset from backend
   useEffect(() => {
     const fetchEpisode = async () => {
       setLoading(true);
       try {
-        const url = `/api/v1/assets/${episodeId}/?platform-slug=partnerplayer`;
-        const response = await fetch(url, {
-          headers: {
-            Authorization: 'Basic ' + btoa(`${PBS_API.CLIENT_ID}:${PBS_API.CLIENT_SECRET}`),
-            Accept: 'application/json',
-          },
-        });
+        const url = `/api/assets/${episodeId}?platform-slug=partnerplayer`;
+        console.log('Fetching from backend:', url);
+        
+        const response = await fetch(url);
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const result: APIResponse = await response.json();
