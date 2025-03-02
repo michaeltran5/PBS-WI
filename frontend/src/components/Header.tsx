@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar, Image } from 'react-bootstrap';
 import { Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,10 +12,33 @@ import {
 } from '../styled/Header.styled';
 
 const Header: React.FC = () => {
+    const [scrolled, setScrolled] = useState(false);
+    
+    //scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            const isScrolled = window.scrollY > 10;
+            if (isScrolled !== scrolled) {
+                setScrolled(isScrolled);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrolled]);
+    
     return (
         <>
             <GlobalFontStyle />
-            <StyledNavbar expand="lg">
+            <GlobalFontStyle />
+            <StyledNavbar expand="lg" style={{ backgroundColor: scrolled ? '#2639c3' : '#000525',
+                    transition: 'background-color 0.3s ease'
+                }}
+            >
                 <StyledContainer fluid>
                     {/* PBS Wisconsin Logo */}
                     <Navbar.Brand as={Link} to="/" className="d-flex align-items-center me-4" style={{ textDecoration: 'none' }}>
