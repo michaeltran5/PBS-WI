@@ -12,6 +12,12 @@ The recommendation engine was built using **Machine Learning and AWS (S3, Lambda
 2. Install PHP: `brew install php`
 3. Verify installation: `php -v`
 
+## Link to the PBS Media Manager php client
+https://github.com/tamw-wnet/PBS_Media_Manager_Client/tree/master
+
+## Start the php server
+php -S localhost:8000
+
 ## Run w/VITE
 
 **$npm install**
