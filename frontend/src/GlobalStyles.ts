@@ -62,6 +62,6 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   p {
-
+    margin: 0;
   }
 `;
