@@ -14,7 +14,6 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-
         <GlobalStyles />
         <Header />
         <Routes>
