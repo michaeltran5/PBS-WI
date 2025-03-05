@@ -26,6 +26,11 @@ php -S localhost:8000
 
 **$npm run dev**
 
+## EC2 Instance Startup
+##  ssh -i spring2025team1.pem ec2-user@3.86.235.248
+##  You have to make a spring2025team1.pem file with the EC2 credentials
+##  chmod 400 for security
+
 ## Authors:
 
 **Camille Forster:** https://github.com/camilleforster
