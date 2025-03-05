@@ -10,13 +10,13 @@ export const MediaCarousel = ({ items }: Props) => {
     const responsive = {
         largeDesktop: {
             breakpoint: { max: Number.MAX_SAFE_INTEGER, min: 1440 },
-            items: 5,
-            slidesToSlide: 5,
+            items: 5.5,
+            slidesToSlide: 5.5,
             partialVisibilityGutter: 10
         },
         desktop: {
             breakpoint: { max: 1439, min: 1024 },
-            items: 5,
+            items: 5.5,
             slidesToSlide: 5,
             partialVisibilityGutter: 10
         },
