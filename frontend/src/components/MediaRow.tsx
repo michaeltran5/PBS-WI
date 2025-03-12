@@ -1,15 +1,16 @@
 import { Container, Title } from "../styled/MediaRow.styled";
+import { Show } from "../types/Show";
 import { MediaCarousel } from "./MediaCarousel";
 
 export type Props = {
     title: string;
-    items: string[];
+    shows: Show[];
 }
-export const MediaRow = ({ title, items }: Props) => {
+export const MediaRow = ({ title, shows }: Props) => {
     return (
         <Container>
             <Title>{title}</Title>
-            <MediaCarousel items={items} />
+            <MediaCarousel shows={shows} />
         </Container>
     );
 };

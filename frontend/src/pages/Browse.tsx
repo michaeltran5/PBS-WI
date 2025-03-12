@@ -1,26 +1,18 @@
-import { Banner } from '../components/Banner';
-import { MediaRow } from '../components/MediaRow';
+import { useGetTopShowsQuery } from '../redux/rtkQuery/pbsWiApi';
+import { PBS_GENRES } from '../constants/genres';
 import { Link } from 'react-router-dom';
+import { MediaRow } from '../components/MediaRow';
+import { Banner } from '../components/Banner';
 
 function Browse() {
-  const items = [
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177",
-    "https://image.pbs.org/video-assets/1pESPQP-asset-mezzanine-16x9-ZsGrPRn.jpg?format=webp&resize=316x177"
-  ];
+  const { data: artsAndMusicShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.ARTS_AND_MUSIC } });
+  const { data: dramaShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.DRAMA } });
+  const { data: historyShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.HISTORY } });
+  const { data: cultureShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.CULTURE } });
+  const { data: indieFilms } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.INDIE_FILMS } });
+  const { data: scienceAndNatureShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.SCIENCE_AND_NATURE } });
 
-  const showIds = [
-    "0323ec58-dfdb-4fc1-aa0e-6ba11bc176b1",
-    "0323ec58-dfdb-4fc1-aa0e-6ba11bc176b1",
-    "0323ec58-dfdb-4fc1-aa0e-6ba11bc176b1"
-  ];
+  if(!artsAndMusicShows || !dramaShows || !historyShows) return;
 
   return (
       <div style={{ marginTop: 73 }}>
@@ -31,11 +23,13 @@ function Browse() {
             </button>
           </Link>
         </div>
-        <Banner showIds={showIds} />
-        <MediaRow title="PBS Wisconsin Shows" items={items} />
-        <MediaRow title="PBS Wisconsin Shows" items={items} />
-        <MediaRow title="PBS Wisconsin Shows" items={items} />
-        <MediaRow title="PBS Wisconsin Shows" items={items} />
+        <Banner />
+        {artsAndMusicShows && <MediaRow title="Arts and Music" shows={artsAndMusicShows} />}
+        {dramaShows && <MediaRow title="Drama" shows={dramaShows} />}
+        {historyShows && <MediaRow title="History" shows={historyShows} />}
+        {cultureShows && <MediaRow title="Culture" shows={cultureShows} />}
+        {indieFilms && <MediaRow title="Indie Films" shows={indieFilms} />}
+        {scienceAndNatureShows && <MediaRow title="Science and Nature" shows={scienceAndNatureShows} />}
       </div>
   )
 }
