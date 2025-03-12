@@ -1,16 +1,16 @@
 import { Carousel } from "react-bootstrap"
 import { BannerItem } from "./BannerItem";
+import { useGetCarouselAssetsQuery } from "../redux/rtkQuery/pbsWiApi";
+import { Asset } from "../types/Asset";
 
-type Props = {
-    showIds: string[];
-}
-export const Banner = ({ showIds }: Props) => {
+export const Banner = () => {
+    const { data: assets, isLoading, isError } = useGetCarouselAssetsQuery();
 
     return (
         <Carousel style={{ marginBottom: 60 }}>
-            {showIds.map((showId: string) => (
-                <Carousel.Item key={showId}>
-                    <BannerItem showId={showId} />
+            {assets?.map((asset: Asset) => (
+                <Carousel.Item key={asset.id}>
+                    <BannerItem asset={asset} />
                 </Carousel.Item>
             ))}
         </Carousel>

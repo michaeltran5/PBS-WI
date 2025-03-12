@@ -1,12 +1,13 @@
 import { MediaCard } from "./MediaCard";
 import 'react-multi-carousel/lib/styles.css';
 import { Container, StyledCarousel } from "../styled/MediaCarousel.styled";
+import { Show } from "../types/Show";
 
 
 export type Props = {
-    items: string[];
+    shows: Show[];
 }
-export const MediaCarousel = ({ items }: Props) => {
+export const MediaCarousel = ({ shows }: Props) => {
     const responsive = {
         largeDesktop: {
             breakpoint: { max: Number.MAX_SAFE_INTEGER, min: 1440 },
@@ -46,8 +47,8 @@ export const MediaCarousel = ({ items }: Props) => {
                 responsive={responsive}
                 itemClass="carouselItem"
             >
-                {items.map((url: string, index: number) => (
-                    <MediaCard key={index} src={url} />
+                {shows.map((show) => (
+                    <MediaCard key={show.id} show={show} />
                 ))}
             </StyledCarousel>
         </Container>

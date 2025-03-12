@@ -1,43 +1,31 @@
 import { ButtonText, Container, CoverImage, Description, Details, EpisodeTitle, PremiereDate, ShowTitle, Top, Button, Content } from "../styled/BannerItem.styled";
 import dayjs from "dayjs";
+import { Asset } from "../types/Asset";
 
 type Props = {
-    showId: string;
+    asset: Asset;
 }
-export const BannerItem = ({ showId }: Props) => {
+export const BannerItem = ({ asset }: Props) => {
+    const formatDuration = (durationInSeconds: number = 0) => {
+        const hours = Math.floor(durationInSeconds / 3600);
+        const minutes = Math.floor((durationInSeconds % 3600) / 60);
 
-    const episode = {
-        attributes: {
-            title: "The National Mustard Museum, Mustard Glazed Pulled Pork",
-            premiered_on: "2012-11-20",
-            duration: 26,
-            description_short: "Host Luke Zahm visits the National Mustard Museum, home to over 6,900 mustards!",
-            show: {
-                attributes: {
-                    title: "Wisconsin Foodie"
-                }
-            },
-            images: [
-                {
-                    image: "https://image.pbs.org/video-assets/dXJBIqg-asset-mezzanine-16x9-CZHOWwy.png?format=webp&resize=1920x1080",
-                    profile: "cover"
-                }
-            ]
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
         }
-    }
-
-    if (!episode) return;
+        return `${minutes}m`;
+    };
 
     return (
         <Container>
-            <CoverImage image={episode.attributes.images[0].image} />
+            <CoverImage image={asset.attributes.images?.[0].image || ''} />
             <Content>
                 <Top>
-                    <ShowTitle>{episode.attributes.show.attributes.title.toUpperCase()}</ShowTitle>
-                    <EpisodeTitle>{episode.attributes.title}</EpisodeTitle>
+                    <ShowTitle>{asset.attributes.parent_tree?.attributes?.season?.attributes?.show?.attributes?.title?.toUpperCase()}</ShowTitle>
+                    <EpisodeTitle>{asset.attributes.title}</EpisodeTitle>
                     <Details>
-                        <PremiereDate>{dayjs(episode.attributes.premiered_on).format("MMM, DD, YYYY")} | {episode.attributes.duration}m</PremiereDate>
-                        <Description>{episode.attributes.description_short}</Description>
+                        <PremiereDate>{dayjs(asset.attributes.premiered_on).format("MMM, DD YYYY")} | {formatDuration(asset.attributes.duration)}</PremiereDate>
+                        <Description>{asset.attributes.description_short}</Description>
                     </Details>
                 </Top>
                 <Button>

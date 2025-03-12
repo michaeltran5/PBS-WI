@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Asset, APIResponse } from '../types/pbs';
+import { Asset } from '../types/Asset';
 
 interface VideoPlayerProps {
   episodeId?: string;
@@ -23,7 +23,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         const response = await fetch(url);
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result: APIResponse = await response.json();
+        const result = await response.json();
         setEpisode(result.data);
         setError(null);
       } catch (err) {
