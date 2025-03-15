@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { PBS_API } from '../config/constants';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-interface Episode {
-  id: string;
-  attributes: {
-    title: string;
-    description_short: string;
-    images: Array<{
-      image: string;
-      profile: string;
-    }>;
-  };
-}
+import { useGetEpisodesByShowIdQuery } from '../redux/rtkQuery/pbsWiApi';
+import { Episode } from '../types/Episode';
 
 interface EpisodesListProps {
   showId?: string;
@@ -26,67 +15,50 @@ export const EpisodesList: React.FC<EpisodesListProps> = ({
   showId = 'nova',
   onEpisodeSelect 
 }) => {
+  const { data: episodesResponse, isLoading, error } = useGetEpisodesByShowIdQuery(showId);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
-  const [allEpisodes, setAllEpisodes] = useState<Episode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [listTitle, setListTitle] = useState('Episodes');
 
   useEffect(() => {
-    const fetchEpisodes = async () => {
-      try {
-        //get the showID
-        const showUrl = `/api/v1/shows/${showId}/?platform-slug=partnerplayer`;
-        const showResponse = await fetch(showUrl, {
-          headers: {
-            Authorization: 'Basic ' + btoa(`${PBS_API.CLIENT_ID}:${PBS_API.CLIENT_SECRET}`),
-            Accept: 'application/json',
-          },
-        });
-
-        if (!showResponse.ok) throw new Error(`HTTP error! status: ${showResponse.status}`);
-        const showResult = await showResponse.json();
-        const resolvedShowId = showResult.data.id;
-
-        //fetch the episodes from that show
-        const episodesUrl = `/api/v1/assets/?platform-slug=partnerplayer&show-id=${resolvedShowId}&type=full_length`;
-        const episodesResponse = await fetch(episodesUrl, {
-          headers: {
-            Authorization: 'Basic ' + btoa(`${PBS_API.CLIENT_ID}:${PBS_API.CLIENT_SECRET}`),
-            Accept: 'application/json',
-          },
-        });
-
-        if (!episodesResponse.ok) throw new Error(`HTTP error! status: ${episodesResponse.status}`);
-        const episodesResult = await episodesResponse.json();
+    if (episodesResponse?.data) {
+      const allEpisodes = episodesResponse.data;
+      
+      //sort episodes by season and episode ordinal
+      const sortedEpisodes = [...allEpisodes].sort((a: Episode, b: Episode) => {
+        //first sort by season ordinal
+        const seasonA = a.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
+        const seasonB = b.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
         
-        setAllEpisodes(episodesResult.data);
-        
-        //hardcoded getting filtering episodes from season 51
-        const season51Episodes = episodesResult.data.filter((episode: Episode) => {
-          const title = episode.attributes.title || '';
-          return title.includes('S51') || 
-                 title.includes('Season 51') || 
-                 title.includes('s51');
-        });
-        
-        if (season51Episodes.length === 0) {
-          setListTitle('Recent Episodes');
-          setEpisodes(episodesResult.data.slice(0, 10));
-        } else {
-          setListTitle('Season 51 Episodes');
-          setEpisodes(season51Episodes);
+        if (seasonA !== seasonB) {
+          return seasonA - seasonB;
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Error fetching episodes:', err);
-      } finally {
-        setLoading(false);
+        
+        //if same season, sort by episode ordinal
+        const episodeA = a.attributes.parent_tree?.attributes?.ordinal || 0;
+        const episodeB = b.attributes.parent_tree?.attributes?.ordinal || 0;
+        return episodeA - episodeB;
+      });
+      
+      //find the earliest season number
+      let earliestSeason: number | null = null;
+      if (sortedEpisodes.length > 0) {
+        earliestSeason = sortedEpisodes[0].attributes.parent_tree?.attributes?.season?.attributes?.ordinal || null;
       }
-    };
-
-    fetchEpisodes();
-  }, [showId]);
+      
+      //filter episodes to show only the earliest season
+      let filteredEpisodes = sortedEpisodes;
+      if (earliestSeason !== null) {
+        filteredEpisodes = sortedEpisodes.filter(episode => 
+          episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal === earliestSeason
+        );
+        setListTitle(`Season ${earliestSeason} Episodes`);
+      } else {
+        setListTitle('Episodes');
+      }
+      
+      setEpisodes(filteredEpisodes);
+    }
+  }, [episodesResponse]);
 
   const getEpisodeImage = (episode: Episode) => {
     if (!episode.attributes.images || episode.attributes.images.length === 0) {
@@ -105,12 +77,14 @@ export const EpisodesList: React.FC<EpisodesListProps> = ({
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div style={{ width: '280px' }} className="text-white">Loading episodes...</div>;
   }
   
   if (error) {
-    return <div style={{ width: '280px' }} className="text-danger">Error: {error}</div>;
+    return <div style={{ width: '280px' }} className="text-danger">
+      Error: {error instanceof Error ? error.message : 'Failed to load episodes'}
+    </div>;
   }
 
   //episode card style

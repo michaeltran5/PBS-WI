@@ -20,11 +20,32 @@ export const pbsWiApi = createApi({
                 url: 'top-shows',
                 params
             })
+        }),
+        getAssetById: builder.query({
+            query: (id) => ({
+                url: `assets/${id}`,
+                params: { 'platform-slug': 'partnerplayer' }
+            })
+        }),
+        getShowById: builder.query({
+            query: (showId) => ({
+                url: `shows/${showId}`,
+                params: { 'platform-slug': 'partnerplayer' }
+            })
+        }),
+        getEpisodesByShowId: builder.query({
+            query: (showId) => ({
+                url: `episodes-by-show/${showId}`,
+                params: { 'platform-slug': 'partnerplayer' }
+            })
         })
     }),
 });
 
 export const {
     useGetCarouselAssetsQuery,
-    useGetTopShowsQuery
+    useGetTopShowsQuery,
+    useGetAssetByIdQuery,
+    useGetShowByIdQuery,
+    useGetEpisodesByShowIdQuery
 } = pbsWiApi;

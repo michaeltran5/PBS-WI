@@ -8,10 +8,21 @@ export type Episode = {
         description_long: string;
         premiered_on: string;
         duration: number;
+        ordinal: number;
         images: Array<{
             image: string;
             profile: string;
         }>;
         show: Show;
+        parent_tree?: {
+            attributes?: {
+                ordinal?: number;
+                season?: {
+                    attributes?: {
+                        ordinal?: number;
+                    };
+                };
+            };
+        };
     };
 };
