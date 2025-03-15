@@ -21,9 +21,9 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<Browse />} />
-
             <Route path="/browse" element={<Browse />} />
             <Route path="/watch" element={<MediaPlayer />} />
+            <Route path="/watch/:showId" element={<MediaPlayer />} />
           </Routes>
         </div>
       </Router>

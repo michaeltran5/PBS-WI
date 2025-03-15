@@ -1,6 +1,5 @@
 import { useGetTopShowsQuery } from '../redux/rtkQuery/pbsWiApi';
 import { PBS_GENRES } from '../constants/genres';
-import { Link } from 'react-router-dom';
 import { MediaRow } from '../components/MediaRow';
 import { Banner } from '../components/Banner';
 
@@ -16,13 +15,6 @@ function Browse() {
 
   return (
       <div style={{ marginTop: 73 }}>
-        <div style={{ position: 'absolute', zIndex: 999 }}>
-          <Link to="/watch">
-            <button style={{ backgroundColor: '#2638c4', color: 'white', padding: '8px 12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>
-              Media Player
-            </button>
-          </Link>
-        </div>
         <Banner />
         {artsAndMusicShows && <MediaRow title="Arts and Music" shows={artsAndMusicShows} />}
         {dramaShows && <MediaRow title="Drama" shows={dramaShows} />}
