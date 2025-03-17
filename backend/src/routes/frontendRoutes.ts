@@ -1,8 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { getChildItems, getList, getItem } from '../services/pbsService';
 import { PBS_CHILD_TYPES, PBS_PARENT_TYPES, PBS_TYPES } from '../constants/pbsTypes';
+import { serverGenrePopularityService } from '../services/sgpService';
+const path = require('path');
 
 const router = express.Router();
+
+const csvFilePath = path.join(__dirname, '../../public/genre-top-100-table-data.csv');
+serverGenrePopularityService.loadData(csvFilePath);
 
 router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFunction) => {
   try {
@@ -49,9 +54,29 @@ router.get('/top-shows', async (req: Request, res: Response, next: NextFunction)
       ...nonLocalShows.data.slice(0, 5),
     ];
 
-    console.log(mixedShows);
-
     res.json(mixedShows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/shows-by-genre/:genreSlug', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { genreSlug } = req.params;
+    
+    const showsResponse = await getList(PBS_TYPES.SHOW, { 
+      'genre-slug': genreSlug,
+      'platform-slug': 'partnerplayer' 
+    });
+    
+    if (showsResponse?.data?.length > 0) {
+      showsResponse.data = serverGenrePopularityService.sortShowsByGenrePopularity(
+        [...showsResponse.data], 
+        genreSlug
+      );
+    }
+    
+    res.json(showsResponse);
   } catch (error) {
     next(error);
   }
@@ -102,9 +127,8 @@ router.get('/episodes-by-show/:showId', async (req: Request, res: Response, next
     }
     
     const showResult = await getItem(showId, PBS_TYPES.SHOW, params);
-    const resolvedShowId = showResult.data.id;
     
-    params['show-id'] = resolvedShowId;
+    params['show-id'] = showResult.data.id;
     const episodes = await getList(PBS_TYPES.ASSET, params);
     
     res.json(episodes);

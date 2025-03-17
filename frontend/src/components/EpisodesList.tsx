@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import Card from 'react-bootstrap/Card';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useGetEpisodesByShowIdQuery } from '../redux/rtkQuery/pbsWiApi';
-import { Episode } from '../types/Episode';
+import { Episode as EpisodeType } from '../types/Episode';
+import SeasonSelector from './SeasonSelector';
+import Episode from './Episode';
+import { Container, EpisodesContainer, EpisodeSpacer, LoadingText, ErrorText, NoEpisodesText
+} from '../styled/EpisodesList.styled';
 
 interface EpisodesListProps {
-  showId?: string;
+  showId: string;
   onEpisodeSelect?: (episodeId: string) => void;
+  currentEpisodeId?: string;
 }
 
 export const EpisodesList: React.FC<EpisodesListProps> = ({ 
-  showId = 'nova',
-  onEpisodeSelect 
+  showId,
+  onEpisodeSelect,
+  currentEpisodeId
 }) => {
   const { data: episodesResponse, isLoading, error } = useGetEpisodesByShowIdQuery(showId);
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
-  const [listTitle, setListTitle] = useState('Episodes');
+  const [episodes, setEpisodes] = useState<EpisodeType[]>([]);
+  const [allEpisodes, setAllEpisodes] = useState<EpisodeType[]>([]);
+  const [seasons, setSeasons] = useState<number[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
 
   useEffect(() => {
     if (episodesResponse?.data) {
-      const allEpisodes = episodesResponse.data;
+      const episodesData = episodesResponse.data;
       
-      //sort episodes by season and episode ordinal
-      const sortedEpisodes = [...allEpisodes].sort((a: Episode, b: Episode) => {
-        //first sort by season ordinal
+      // sort episodes by season and episode number
+      const sortedEpisodes = [...episodesData].sort((a: EpisodeType, b: EpisodeType) => {
         const seasonA = a.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
         const seasonB = b.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
         
@@ -33,44 +36,48 @@ export const EpisodesList: React.FC<EpisodesListProps> = ({
           return seasonA - seasonB;
         }
         
-        //if same season, sort by episode ordinal
         const episodeA = a.attributes.parent_tree?.attributes?.ordinal || 0;
         const episodeB = b.attributes.parent_tree?.attributes?.ordinal || 0;
         return episodeA - episodeB;
       });
       
-      //find the earliest season number
-      let earliestSeason: number | null = null;
-      if (sortedEpisodes.length > 0) {
-        earliestSeason = sortedEpisodes[0].attributes.parent_tree?.attributes?.season?.attributes?.ordinal || null;
-      }
+      setAllEpisodes(sortedEpisodes);
       
-      //filter episodes to show only the earliest season
-      let filteredEpisodes = sortedEpisodes;
-      if (earliestSeason !== null) {
-        filteredEpisodes = sortedEpisodes.filter(episode => 
-          episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal === earliestSeason
-        );
-        setListTitle(`Season ${earliestSeason} Episodes`);
-      } else {
-        setListTitle('Episodes');
+      const uniqueSeasons: number[] = Array.from(
+        new Set(
+          sortedEpisodes
+            .map(episode => episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal)
+            .filter((season): season is number => season !== undefined)
+        )
+      ).sort((a, b) => a - b);
+      
+      setSeasons(uniqueSeasons);
+      
+      // set first season as default
+      if (uniqueSeasons.length > 0 && !selectedSeason) {
+        setSelectedSeason(uniqueSeasons[0]);
       }
+    }
+  }, [episodesResponse, selectedSeason]);
+  
+  useEffect(() => {
+    if (allEpisodes.length > 0 && selectedSeason !== null) {
+      const filteredEpisodes = allEpisodes.filter(episode => 
+        episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal === selectedSeason
+      );
       
       setEpisodes(filteredEpisodes);
+    } else {
+      setEpisodes(allEpisodes);
     }
-  }, [episodesResponse]);
+  }, [allEpisodes, selectedSeason]);
 
-  const getEpisodeImage = (episode: Episode) => {
-    if (!episode.attributes.images || episode.attributes.images.length === 0) {
-      return '/api/placeholder/160/90';
-    }
-    const imageObj = episode.attributes.images.find(img => 
-      img.profile === 'asset-mezzanine-16x9' || 
-      img.profile === 'episode-mezzanine-16x9'
-    );
-    return imageObj ? imageObj.image : '/api/placeholder/160/90';
+  // handle season change
+  const handleSeasonChange = (season: number) => {
+    setSelectedSeason(season);
   };
 
+  // handle episode selection
   const handleEpisodeClick = (episodeId: string) => {
     if (onEpisodeSelect) {
       onEpisodeSelect(episodeId);
@@ -78,66 +85,41 @@ export const EpisodesList: React.FC<EpisodesListProps> = ({
   };
 
   if (isLoading) {
-    return <div style={{ width: '280px' }} className="text-white">Loading episodes...</div>;
+    return <LoadingText>Loading episodes...</LoadingText>;
   }
   
   if (error) {
-    return <div style={{ width: '280px' }} className="text-danger">
+    return <ErrorText>
       Error: {error instanceof Error ? error.message : 'Failed to load episodes'}
-    </div>;
+    </ErrorText>;
   }
 
-  //episode card style
-  const cardStyles = {
-    backgroundColor: 'transparent',
-    border: 'none',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-  };
-
   return (
-    <div style={{ width: '400px', flexShrink: 0 }}>
-      <h3 className="text-white mb-3">{listTitle}</h3>
+    <Container>
+      {/* season selector */}
+      <SeasonSelector seasons={seasons} selectedSeason={selectedSeason} onSeasonChange={handleSeasonChange}/>
       
       {episodes.length > 0 ? (
-        <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '8px', width: '400px' }}>
-          {episodes.map(episode => (
-            <Card 
-              key={episode.id} 
-              className="mb-3" 
-              text="white"
-              onClick={() => handleEpisodeClick(episode.id)}
-              style={{ 
-                ...cardStyles,
-                cursor: 'pointer', 
-                height: '90px',
-                transition: 'background-color 0.2s ease' 
-              }}
-            >
-              <Row className="g-0 h-100">
-                <Col xs={4} className="pe-0">
-                  <Card.Img 
-                    src={getEpisodeImage(episode)} 
-                    alt={episode.attributes.title}
-                    style={{ height: '100%', objectFit: 'cover' }}
-                  />
-                </Col>
-                <Col xs={8}>
-                  <Card.Body className="p-2">
-                    <Card.Title className="fs-6 mb-1" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {episode.attributes.title}
-                    </Card.Title>
-                    <Card.Text className="text-white small" style={{ fontSize: '0.75rem', maxHeight: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                      {episode.attributes.description_short || "No description available"}
-                    </Card.Text>
-                  </Card.Body>
-                </Col>
-              </Row>
-            </Card>
+        <EpisodesContainer>
+          {episodes.map((episode, index) => (
+            <React.Fragment key={episode.id}>
+              {/* episode component */}
+              <Episode 
+                episode={episode} 
+                onClick={handleEpisodeClick} 
+                isActive={currentEpisodeId ? episode.id === currentEpisodeId : false}
+              />
+              
+              {/* spacing between episodes */}
+              {index < episodes.length - 1 && <EpisodeSpacer />}
+            </React.Fragment>
           ))}
-        </div>
+        </EpisodesContainer>
       ) : (
-        <p className="text-white">No episodes available</p>
+        <NoEpisodesText>No episodes available</NoEpisodesText>
       )}
-    </div>
+    </Container>
   );
 };
+
+export default EpisodesList;
