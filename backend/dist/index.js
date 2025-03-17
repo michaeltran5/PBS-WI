@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const frontendRoutes_1 = __importDefault(require("./routes/frontendRoutes"));
+const ga4Service_1 = require("./services/ga4Service");
 // create express app
 const app = (0, express_1.default)();
 // middleware
@@ -27,3 +28,5 @@ app.listen(PORT, (err) => {
     }
     console.log(`Server is listening on port ${PORT}`);
 });
+// getMetadata();
+(0, ga4Service_1.getTop10Shows)();

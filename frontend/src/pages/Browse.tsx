@@ -11,8 +11,6 @@ function Browse() {
   const { data: indieFilms } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.INDIE_FILMS } });
   const { data: scienceAndNatureShows } = useGetTopShowsQuery({ params: { 'genre-slug': PBS_GENRES.SCIENCE_AND_NATURE } });
 
-  if(!artsAndMusicShows || !dramaShows || !historyShows) return;
-
   return (
       <div style={{ marginTop: 73 }}>
         <Banner />

@@ -1,35 +1,72 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { getChildItems, getList, getItem } from '../services/pbsService';
+import { getChildItems, getItem, getList, getItem, search } from '../services/pbsService';
 import { PBS_CHILD_TYPES, PBS_PARENT_TYPES, PBS_TYPES } from '../constants/pbsTypes';
+import { getTopShowTitles } from '../services/ga4Service';
 
 const router = express.Router();
 
 router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const showsResponse = await getList(PBS_TYPES.SHOW, { sort: '-updated_at', 'fetch-related': true });
-    const shows = showsResponse.data;
-
-    const episodeAssets = [];
-
-    for (const show of shows) {
-      const latestSeason = show.attributes.seasons[0];
-      if(!latestSeason) continue;
-
-      const seasonsResponse = await getChildItems(latestSeason.id, PBS_PARENT_TYPES.SEASON, PBS_CHILD_TYPES.EPISODE, { sort: '-updated_at' });
-      
-      const latestEpisode = seasonsResponse.data[0];
-      if (!latestEpisode) continue;
-
-      const episodeAssetResponse = await getChildItems(latestEpisode.id, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
-
-      episodeAssets.push(...episodeAssetResponse.data.slice(0, 3 - episodeAssets.length));
-
-      if (episodeAssets.length >= 3) {
-        res.json(episodeAssets);
-        return;
-      }
+    // get top show titles
+    const topShowTitles = await getTopShowTitles("1daysAgo", undefined, 6);
+    if (!topShowTitles || topShowTitles.length === 0) {
+      res.json([]);
+      return;
     }
-    res.json(episodeAssets);
+
+    console.log('topshowtitles', topShowTitles);
+
+    // search for each show
+    const searchResponses = await Promise.all(topShowTitles.map(title =>
+      search(PBS_TYPES.SHOW, { query: title, 'fetch-related': true, limit: 1 })
+    ));
+
+    const validShows = searchResponses.map(res => res.data?.[0]).filter(Boolean);
+
+    if (validShows.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    // fetch first season of each show
+    const seasonResponses = await Promise.all(
+      validShows.map(show =>
+        getChildItems(show.id, PBS_PARENT_TYPES.SHOW, PBS_CHILD_TYPES.SEASON, { sort: '-ordinal', 'fetch-related': true })
+      )
+    );
+
+    const validSeasons = seasonResponses.map(res => res.data?.[0]).filter(Boolean);
+
+    if (validSeasons.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    const firstEpisodeIds = validSeasons
+      .map(season => season?.attributes?.episodes?.[0].id)
+      .filter(Boolean);
+
+    if (firstEpisodeIds.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    console.log('firstEpisodeIds', firstEpisodeIds);
+
+    // fetch the assets for each first episode
+    const assetResponses = await Promise.all(
+      firstEpisodeIds.map(episodeId =>
+        getChildItems(episodeId, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET)
+      )
+    );
+
+    console.log('assetResponses', assetResponses);
+
+    const episodeAssets = assetResponses
+      .map(res => res?.data?.[0])
+      .filter(Boolean);
+
+    res.json(episodeAssets.slice(0, 3));
   } catch (error) {
     next(error);
   }
@@ -39,7 +76,7 @@ router.get('/top-shows', async (req: Request, res: Response, next: NextFunction)
   try {
     const params = req.query;
 
-    const localParams = { ...params, 'audience-scope': 'local', audience: 'wpne'}
+    const localParams = { ...params, 'audience-scope': 'local', audience: 'wpne' }
 
     const localShows = await getList(PBS_TYPES.SHOW, localParams);
     const nonLocalShows = await getList(PBS_TYPES.SHOW, params);
@@ -112,5 +149,7 @@ router.get('/episodes-by-show/:showId', async (req: Request, res: Response, next
     next(error);
   }
 });
+
+
 
 export default router;

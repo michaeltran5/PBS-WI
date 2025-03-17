@@ -9,8 +9,8 @@ export type Show = {
             id: string,
             title: string
         },
-        images: Array<{
-            image: string;
+        images?: Array<{
+            image?: string;
             profile: string;
         }>;
     }

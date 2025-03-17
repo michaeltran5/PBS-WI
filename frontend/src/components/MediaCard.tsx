@@ -13,10 +13,11 @@ export const MediaCard = ({ show }: Props) => {
         navigate(`/watch/${show.id}`);
     };
 
+    console.log('show');
     return (
         <Hover onClick={handleClick}>
             <Cover
-                src={show.attributes.images[0].image}
+                src={show.attributes.images?.[0]?.image || "https://image.pbs.org/video-assets/p6LbKTL-asset-mezzanine-16x9-26jA930.jpg?format=webp&resize=1720x960"}
             />
         </Hover>
     );
