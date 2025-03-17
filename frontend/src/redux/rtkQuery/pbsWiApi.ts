@@ -13,13 +13,19 @@ export const pbsWiApi = createApi({
         getCarouselAssets: builder.query<Asset[], void>({
             query: () => ({
                 url: 'carousel-assets'
-            })
+            }),
+            transformResponse: (response: any) => {
+                return response?.data || response;
+            }
         }),
         getTopShows: builder.query<Show[], { params?: Record<string, any>}>({
             query: ({ params }) => ({
                 url: 'top-shows',
                 params
-            })
+            }),
+            transformResponse: (response: any) => {
+                return response?.data || response;
+            }
         }),
         getAssetById: builder.query({
             query: (id) => ({
@@ -38,7 +44,13 @@ export const pbsWiApi = createApi({
                 url: `episodes-by-show/${showId}`,
                 params: { 'platform-slug': 'partnerplayer' }
             })
-        })
+        }),
+        getShowsByGenre: builder.query<any, string>({
+            query: (genreSlug) => ({
+              url: `shows-by-genre/${genreSlug}`,
+              params: { 'platform-slug': 'partnerplayer' }
+            })
+          }),
     }),
 });
 
@@ -47,5 +59,6 @@ export const {
     useGetTopShowsQuery,
     useGetAssetByIdQuery,
     useGetShowByIdQuery,
-    useGetEpisodesByShowIdQuery
+    useGetEpisodesByShowIdQuery,
+    useGetShowsByGenreQuery
 } = pbsWiApi;
