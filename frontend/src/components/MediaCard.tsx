@@ -16,7 +16,7 @@ export const MediaCard = ({ show }: Props) => {
     return (
         <Hover onClick={handleClick}>
             <Cover
-                src={show.attributes.images[0].image}
+                src={show?.attributes?.images?.[0]?.image || '/default-image.jpg'}
             />
         </Hover>
     );
