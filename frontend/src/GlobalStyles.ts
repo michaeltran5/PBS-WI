@@ -64,4 +64,19 @@ export const GlobalStyles = createGlobalStyle`
   p {
     margin: 0;
   }
+
+  .backdrop-blur {
+    background-color: rgba(0, 5, 37, 0.7) !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+  
+  body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+  }
+  
+  .login-popup {
+    font-family: 'PBS Sans', sans-serif;
+  }
 `;
