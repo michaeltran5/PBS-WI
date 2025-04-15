@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Image } from 'react-bootstrap';
-import { Search, User } from 'lucide-react';
+import { Navbar, Image, Dropdown } from 'react-bootstrap';
+import { Search, User, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
     StyledNavbar,
@@ -10,9 +10,13 @@ import {
     RightNav,
     GlobalFontStyle
 } from '../styled/Header.styled';
+import LoginPopup from './LoginPopup';
+import { useAuth } from './AuthContext';
 
 const Header: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
+    const { isAuthenticated, user, logout } = useAuth();
     
     //scroll effect
     useEffect(() => {
@@ -31,9 +35,19 @@ const Header: React.FC = () => {
         };
     }, [scrolled]);
     
+    const handleProfileClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            setShowLoginPopup(true);
+        }
+    };
+    
+    const handleLogout = () => {
+        logout();
+    };
+    
     return (
         <>
-            <GlobalFontStyle />
             <GlobalFontStyle />
             <StyledNavbar expand="lg" style={{ backgroundColor: scrolled ? '#2639c3' : '#000525',
                     transition: 'background-color 0.3s ease'
@@ -77,13 +91,45 @@ const Header: React.FC = () => {
                             <NavItem as={Link} to="/search" className="no-underline">
                                 <Search size={20} />
                             </NavItem>
-                            <NavItem as={Link} to="/profile" className="no-underline">
-                                <User size={20} />
-                            </NavItem>
+                            
+                            {isAuthenticated ? (
+                                <Dropdown align="end">
+                                    <Dropdown.Toggle 
+                                        as="div"
+                                        id="profile-dropdown"
+                                        style={{ cursor: 'pointer' }}
+                                        className="no-underline"
+                                    >
+                                        <User size={20} />
+                                    </Dropdown.Toggle>
+                                    
+                                    <Dropdown.Menu style={{ backgroundColor: '#2639c3', borderColor: 'rgba(255,255,255,0.2)' }}>
+                                        <Dropdown.Item 
+                                            onClick={handleLogout}
+                                            style={{ color: 'white' }}
+                                        >
+                                            <div className="d-flex align-items-center">
+                                                <LogOut size={16} className="me-2" />
+                                                Sign Out
+                                            </div>
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            ) : (
+                                <NavItem as={Link} to="#" onClick={handleProfileClick} className="no-underline">
+                                    <User size={20} />
+                                </NavItem>
+                            )}
                         </RightNav>
                     </Navbar.Collapse>
                 </StyledContainer>
             </StyledNavbar>
+            
+            {/* Login Popup */}
+            <LoginPopup 
+                show={showLoginPopup} 
+                onHide={() => setShowLoginPopup(false)} 
+            />
         </>
     );
 };
