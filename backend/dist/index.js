@@ -5,14 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const frontendRoutes_1 = __importDefault(require("./routes/frontendRoutes"));
+const customApi_1 = __importDefault(require("./routes/customApi"));
+const pbsProxy_1 = __importDefault(require("./routes/pbsProxy"));
 // create express app
 const app = (0, express_1.default)();
 // middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // api routes
-app.use('/pbs-api', frontendRoutes_1.default);
+app.use('/api', pbsProxy_1.default);
+app.use('/api', customApi_1.default);
 // error handling middleware
 app.use((err, _req, res, _next) => {
     console.error('Error:', err.message);

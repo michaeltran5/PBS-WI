@@ -1,23 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useGetAssetByIdQuery } from '../redux/rtkQuery/pbsWiApi';
+import { useState, useRef, useEffect } from 'react';
 import { PlayerContainer, VideoIframe, Overlay, OverlayContent, ShowTitle, EpisodeTitle, EpisodeInfo, Description, Metadata,
   MetadataSeparator, LoadingMessage, ErrorMessage} from '../styled/VideoPlayer.styled';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useGetAssetByEpisodeIdQuery } from '../redux/rtkQuery/pbsWiApi';
 
-interface VideoPlayerProps {
+type Props = {
   episodeId?: string;
   fullWidth?: boolean;
 }
-
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
-  episodeId = 'c445e87d-40fd-43f1-9ac2-36725d4fea37',
-  fullWidth = false
-}) => {
-  const { data, isLoading, error } = useGetAssetByIdQuery(episodeId);
+export const VideoPlayer = ({ episodeId, fullWidth }: Props) => {
+  const { data: episode, isLoading, error } = useGetAssetByEpisodeIdQuery(episodeId ? { id: episodeId } : skipToken);
   const [isHovering, setIsHovering] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const episode = data?.data;
-  
+    
   useEffect(() => {
     return () => {
       if (hideTimeoutRef.current) {

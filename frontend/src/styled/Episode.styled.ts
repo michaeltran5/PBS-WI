@@ -62,7 +62,7 @@ export const Description = styled.p`
   color: white;
   font-size: 16px;
   margin: 0 0 8px 0;
-  max-height: 54px;
+  max-height: 58px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;

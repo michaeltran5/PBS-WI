@@ -9,7 +9,7 @@ export type Episode = {
         premiered_on: string;
         duration: number;
         ordinal: number;
-        images: Array<{
+        images?: Array<{
             image: string;
             profile: string;
         }>;
@@ -24,5 +24,29 @@ export type Episode = {
                 };
             };
         };
+        full_length_asset?: {
+            id: string;
+            attributes: {
+                duration: number;
+                images: Array<{
+                    image: string;
+                    profile: string
+                }>;
+            }
+        };
+        assets?: Array<{
+            attributes?: {
+                parent_tree?: {
+                    attributes?: {
+                        ordinal?: number;
+                        season?: {
+                            attributes?: {
+                                ordinal?: number;
+                            };
+                        };
+                    };
+                }
+            }
+        }>;
     };
 };

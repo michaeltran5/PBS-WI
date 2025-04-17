@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 interface PlayerContainerProps {
-  fullWidth: boolean;
+  fullWidth?: boolean;
 }
 
 export const PlayerContainer = styled.div<PlayerContainerProps>`

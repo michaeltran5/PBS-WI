@@ -1,16 +1,12 @@
-import dotenv from 'dotenv';
-import { getPBSApiClient } from '../clients/pbsApiClient';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { PBSAssetType, PBSChildType, PBSParentType, PBSType, PBSWindowType } from '../constants/pbsTypes';
+import { pbsApiClient } from '../client';
 
 dayjs.extend(utc);
-dotenv.config();
 
-const apiClient = getPBSApiClient();
-
-const getRequest = async (endpoint: string, params: Record<string, any> = {}) => {
-  return apiClient.get(endpoint, { params }).then(res => res.data);
+export const getRequest = async (endpoint: string, params: Record<string, any> = {}) => {
+  return pbsApiClient.get(endpoint, { params }).then(res => res.data);
 };
 
 export const getItem = async (id: string, type: PBSType, params: Record<string, any> = {}) => {
@@ -19,6 +15,10 @@ export const getItem = async (id: string, type: PBSType, params: Record<string, 
 
 export const getList = async (type: PBSType, params: Record<string, any> = {}) => {
   return getRequest(`/${type}s/`, params);
+};
+
+export const search = async (type: PBSType, params: Record<string, any> = {}) => {
+  return getRequest(`/${type}s/search/`, params);
 };
 
 export const getChildItems = async (parentId: string, parentType: PBSParentType, childType: PBSChildType, params: Record<string, any> = {}) => {

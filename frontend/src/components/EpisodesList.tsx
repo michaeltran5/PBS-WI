@@ -1,93 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { useGetEpisodesByShowIdQuery } from '../redux/rtkQuery/pbsWiApi';
-import { Episode as EpisodeType } from '../types/Episode';
+import React, { useEffect, useRef, useState } from 'react';
 import SeasonSelector from './SeasonSelector';
 import Episode from './Episode';
-import { Container, EpisodesContainer, EpisodeSpacer, LoadingText, ErrorText, NoEpisodesText
+import {
+  Container, EpisodesContainer, EpisodeSpacer, LoadingText, ErrorText, NoEpisodesText
 } from '../styled/EpisodesList.styled';
+import { useGetSeasonEpisodesQuery } from '../redux/rtkQuery/pbsWiApi';
+import { Season } from '../types/Season';
+import { skipToken } from '@reduxjs/toolkit/query';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-interface EpisodesListProps {
-  showId: string;
+type Props = {
+  selectedSeason: number;
+  setSelectedSeason: (season: number) => void;
+  seasons: Season[];
+  seasonsCount: number;
   onEpisodeSelect?: (episodeId: string) => void;
-  currentEpisodeId?: string;
+  selectedEpisodeId?: string;
 }
+export const EpisodesList = ({ selectedSeason, setSelectedSeason, seasons, seasonsCount, onEpisodeSelect, selectedEpisodeId }: Props) => {
+  const seasonId = seasons?.find(
+    (s) => s.attributes.ordinal === selectedSeason
+  )?.id;
 
-export const EpisodesList: React.FC<EpisodesListProps> = ({ 
-  showId,
-  onEpisodeSelect,
-  currentEpisodeId
-}) => {
-  const { data: episodesResponse, isLoading, error } = useGetEpisodesByShowIdQuery(showId);
-  const [episodes, setEpisodes] = useState<EpisodeType[]>([]);
-  const [allEpisodes, setAllEpisodes] = useState<EpisodeType[]>([]);
-  const [seasons, setSeasons] = useState<number[]>([]);
-  const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    if (episodesResponse?.data) {
-      const episodesData = episodesResponse.data;
-      
-      // sort episodes by season and episode number
-      const sortedEpisodes = [...episodesData].sort((a: EpisodeType, b: EpisodeType) => {
-        const seasonA = a.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
-        const seasonB = b.attributes.parent_tree?.attributes?.season?.attributes?.ordinal || 0;
-        
-        if (seasonA !== seasonB) {
-          return seasonA - seasonB;
-        }
-        
-        const episodeA = a.attributes.parent_tree?.attributes?.ordinal || 0;
-        const episodeB = b.attributes.parent_tree?.attributes?.ordinal || 0;
-        return episodeA - episodeB;
-      });
-      
-      setAllEpisodes(sortedEpisodes);
-      
-      const uniqueSeasons: number[] = Array.from(
-        new Set(
-          sortedEpisodes
-            .map(episode => episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal)
-            .filter((season): season is number => season !== undefined)
-        )
-      ).sort((a, b) => a - b);
-      
-      setSeasons(uniqueSeasons);
-      
-      // set first season as default
-      if (uniqueSeasons.length > 0 && !selectedSeason) {
-        setSelectedSeason(uniqueSeasons[0]);
-      }
-    }
-  }, [episodesResponse, selectedSeason]);
-  
-  useEffect(() => {
-    if (allEpisodes.length > 0 && selectedSeason !== null) {
-      const filteredEpisodes = allEpisodes.filter(episode => 
-        episode.attributes.parent_tree?.attributes?.season?.attributes?.ordinal === selectedSeason
-      );
-      
-      setEpisodes(filteredEpisodes);
-    } else {
-      setEpisodes(allEpisodes);
-    }
-  }, [allEpisodes, selectedSeason]);
+    setPage(1);
+  }, [seasonId]);
 
-  // handle season change
+  const { data: episodesResponse, isLoading, isFetching, error } = useGetSeasonEpisodesQuery(seasonId ? { id: seasonId, params: { page } } : skipToken);
+  const episodes = episodesResponse?.items;
+
+  useEffect(() => {
+    if (episodes && episodes.length > 0 && !selectedEpisodeId && onEpisodeSelect) {
+      onEpisodeSelect(episodes[0].id);
+    }
+  }, [episodes, selectedEpisodeId, onEpisodeSelect]);
+
   const handleSeasonChange = (season: number) => {
     setSelectedSeason(season);
   };
 
-  // handle episode selection
   const handleEpisodeClick = (episodeId: string) => {
     if (onEpisodeSelect) {
       onEpisodeSelect(episodeId);
     }
   };
 
+  const fetchMoreData = () => {
+    if (!isFetching && episodesResponse?.pagination.has_more) {
+      setPage(prev => prev + 1);
+    }
+  };
+
   if (isLoading) {
     return <LoadingText>Loading episodes...</LoadingText>;
   }
-  
+
   if (error) {
     return <ErrorText>
       Error: {error instanceof Error ? error.message : 'Failed to load episodes'}
@@ -97,24 +66,32 @@ export const EpisodesList: React.FC<EpisodesListProps> = ({
   return (
     <Container>
       {/* season selector */}
-      <SeasonSelector seasons={seasons} selectedSeason={selectedSeason} onSeasonChange={handleSeasonChange}/>
-      
-      {episodes.length > 0 ? (
-        <EpisodesContainer>
-          {episodes.map((episode, index) => (
-            <React.Fragment key={episode.id}>
-              {/* episode component */}
-              <Episode 
-                episode={episode} 
-                onClick={handleEpisodeClick} 
-                isActive={currentEpisodeId ? episode.id === currentEpisodeId : false}
-              />
-              
-              {/* spacing between episodes */}
-              {index < episodes.length - 1 && <EpisodeSpacer />}
-            </React.Fragment>
-          ))}
-        </EpisodesContainer>
+      <SeasonSelector seasonsCount={seasonsCount} selectedSeason={selectedSeason} onSeasonChange={handleSeasonChange} />
+
+      {episodes && episodes.length > 0 ? (
+        <InfiniteScroll
+          dataLength={episodes.length}
+          next={fetchMoreData}
+          hasMore={episodesResponse?.pagination.has_more}
+          loader={<LoadingText>Loading more episodes...</LoadingText>}
+        >
+          <EpisodesContainer>
+            {episodes.map((episode, index) => (
+              <React.Fragment key={episode.id}>
+                {/* episode component */}
+                <Episode
+                  episode={episode}
+                  selectedSeason={selectedSeason}
+                  onClick={handleEpisodeClick}
+                  isActive={selectedEpisodeId ? episode.id === selectedEpisodeId : false}
+                />
+
+                {/* spacing between episodes */}
+                {index < episodes.length - 1 && <EpisodeSpacer />}
+              </React.Fragment>
+            ))}
+          </EpisodesContainer>
+        </InfiniteScroll>
       ) : (
         <NoEpisodesText>No episodes available</NoEpisodesText>
       )}
