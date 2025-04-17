@@ -1,3 +1,5 @@
+import { PBSGenreName, PBSGenreSlug } from "../constants/genres";
+
 export type Show = {
     id: string;
     attributes: {
@@ -7,11 +9,13 @@ export type Show = {
         premiered_on: string,
         genre: {
             id: string,
-            title: string
+            title: PBSGenreName,
+            slug: PBSGenreSlug
         },
-        images: Array<{
-            image: string;
+        images?: Array<{
+            image?: string;
             profile: string;
-        }>;
-    }
+        }>
+    },
+    seasons_count: number;
 }

@@ -1,6 +1,7 @@
 import { Cover, Hover } from "../styled/MediaCard.styled"
 import { Show } from "../types/Show";
 import { useNavigate } from 'react-router-dom';
+import { getPreferredImage } from "../utils/images";
 
 
 export type Props = {
@@ -8,7 +9,7 @@ export type Props = {
 }
 export const MediaCard = ({ show }: Props) => {
     const navigate = useNavigate();
-    
+
     const handleClick = () => {
         navigate(`/watch/${show.id}`);
     };
@@ -16,7 +17,7 @@ export const MediaCard = ({ show }: Props) => {
     return (
         <Hover onClick={handleClick}>
             <Cover
-                src={show?.attributes?.images?.[0]?.image || '/default-image.jpg'}
+                src={getPreferredImage(show.attributes.images)}
             />
         </Hover>
     );

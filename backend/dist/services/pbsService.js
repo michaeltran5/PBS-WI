@@ -12,27 +12,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAssets = exports.getShowByProgramId = exports.getAssetByTPMediaId = exports.getChangelog = exports.alterPbsImage = exports.extractImage = exports.getImages = exports.getChildItems = exports.getList = exports.getItem = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
-const pbsApiClient_1 = require("../clients/pbsApiClient");
+exports.getAssets = exports.getShowByProgramId = exports.getAssetByTPMediaId = exports.getChangelog = exports.alterPbsImage = exports.extractImage = exports.getImages = exports.getChildItems = exports.search = exports.getList = exports.getItem = exports.getRequest = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const utc_1 = __importDefault(require("dayjs/plugin/utc"));
+const client_1 = require("../client");
 dayjs_1.default.extend(utc_1.default);
-dotenv_1.default.config();
-const apiClient = (0, pbsApiClient_1.getPBSApiClient)();
 const getRequest = (endpoint_1, ...args_1) => __awaiter(void 0, [endpoint_1, ...args_1], void 0, function* (endpoint, params = {}) {
-    return apiClient.get(endpoint, { params }).then(res => res.data);
+    return client_1.pbsApiClient.get(endpoint, { params }).then(res => res.data);
 });
+exports.getRequest = getRequest;
 const getItem = (id_1, type_1, ...args_1) => __awaiter(void 0, [id_1, type_1, ...args_1], void 0, function* (id, type, params = {}) {
-    return getRequest(`/${type}s/${id}/`, params);
+    return (0, exports.getRequest)(`/${type}s/${id}/`, params);
 });
 exports.getItem = getItem;
 const getList = (type_1, ...args_1) => __awaiter(void 0, [type_1, ...args_1], void 0, function* (type, params = {}) {
-    return getRequest(`/${type}s/`, params);
+    return (0, exports.getRequest)(`/${type}s/`, params);
 });
 exports.getList = getList;
+const search = (type_1, ...args_1) => __awaiter(void 0, [type_1, ...args_1], void 0, function* (type, params = {}) {
+    return (0, exports.getRequest)(`/${type}s/search/`, params);
+});
+exports.search = search;
 const getChildItems = (parentId_1, parentType_1, childType_1, ...args_1) => __awaiter(void 0, [parentId_1, parentType_1, childType_1, ...args_1], void 0, function* (parentId, parentType, childType, params = {}) {
-    return getRequest(`/${parentType}s/${parentId}/${childType}s/`, params);
+    return (0, exports.getRequest)(`/${parentType}s/${parentId}/${childType}s/`, params);
 });
 exports.getChildItems = getChildItems;
 const getImages = (id, type) => __awaiter(void 0, void 0, void 0, function* () {
@@ -55,23 +57,23 @@ const getChangelog = (...args_1) => __awaiter(void 0, [...args_1], void 0, funct
     if (!params.since) {
         params.since = (0, dayjs_1.default)().utc().subtract(24, 'hour').toISOString();
     }
-    return getRequest('/changelog/', params);
+    return (0, exports.getRequest)('/changelog/', params);
 });
 exports.getChangelog = getChangelog;
 const getAssetByTPMediaId = (tpMediaId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
-    let response = yield getRequest('/assets/legacy/', { tp_media_id: tpMediaId });
+    let response = yield (0, exports.getRequest)('/assets/legacy/', { tp_media_id: tpMediaId });
     if (((_a = response.errors) === null || _a === void 0 ? void 0 : _a.status) === 404) {
         const match = (_c = (_b = response.errors.data) === null || _b === void 0 ? void 0 : _b.url) === null || _c === void 0 ? void 0 : _c.match(/\/assets\/(.*?)\//);
         if (match) {
-            response = yield getRequest(`/assets/${match[1]}/edit/`);
+            response = yield (0, exports.getRequest)(`/assets/${match[1]}/edit/`);
         }
     }
     return response;
 });
 exports.getAssetByTPMediaId = getAssetByTPMediaId;
 const getShowByProgramId = (programId) => __awaiter(void 0, void 0, void 0, function* () {
-    return getRequest('/shows/legacy/', { content_channel_id: programId });
+    return (0, exports.getRequest)('/shows/legacy/', { content_channel_id: programId });
 });
 exports.getShowByProgramId = getShowByProgramId;
 const getAssets = (parentId_1, parentType_1, ...args_1) => __awaiter(void 0, [parentId_1, parentType_1, ...args_1], void 0, function* (parentId, parentType, assetType = 'all', window = 'all', params = {}) {

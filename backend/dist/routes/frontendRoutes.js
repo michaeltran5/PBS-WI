@@ -15,32 +15,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const pbsService_1 = require("../services/pbsService");
 const pbsTypes_1 = require("../constants/pbsTypes");
-const sgpService_1 = require("../services/sgpService");
-const path = require('path');
+const ga4Service_1 = require("../services/ga4Service");
+const csvService_1 = require("../services/csvService");
 const router = express_1.default.Router();
-const csvFilePath = path.join(__dirname, '../../public/genre-top-100-table-data.csv');
-sgpService_1.serverGenrePopularityService.loadData(csvFilePath);
 router.get('/carousel-assets', (_req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const showsResponse = yield (0, pbsService_1.getList)(pbsTypes_1.PBS_TYPES.SHOW, { sort: '-updated_at', 'fetch-related': true });
-        const shows = showsResponse.data;
-        const episodeAssets = [];
-        for (const show of shows) {
-            const latestSeason = show.attributes.seasons[0];
-            if (!latestSeason)
-                continue;
-            const seasonsResponse = yield (0, pbsService_1.getChildItems)(latestSeason.id, pbsTypes_1.PBS_PARENT_TYPES.SEASON, pbsTypes_1.PBS_CHILD_TYPES.EPISODE, { sort: '-updated_at' });
-            const latestEpisode = seasonsResponse.data[0];
-            if (!latestEpisode)
-                continue;
-            const episodeAssetResponse = yield (0, pbsService_1.getChildItems)(latestEpisode.id, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET);
-            episodeAssets.push(...episodeAssetResponse.data.slice(0, 3 - episodeAssets.length));
-            if (episodeAssets.length >= 3) {
-                res.json(episodeAssets);
-                return;
-            }
+        // get top show titles
+        const topShowTitles = yield (0, ga4Service_1.getTopShowTitles)("1daysAgo", undefined, 6);
+        if (!topShowTitles || topShowTitles.length === 0) {
+            res.json([]);
+            return;
         }
-        res.json(episodeAssets);
+        // search for each show
+        const searchResponses = yield Promise.all(topShowTitles.map(title => (0, pbsService_1.search)(pbsTypes_1.PBS_TYPES.SHOW, { query: title, 'fetch-related': true, limit: 1 })));
+        const validShows = searchResponses.map(res => { var _a; return (_a = res.data) === null || _a === void 0 ? void 0 : _a[0]; }).filter(Boolean);
+        if (validShows.length === 0) {
+            res.json([]);
+            return;
+        }
+        // fetch first season of each show
+        const seasonResponses = yield Promise.all(validShows.map(show => (0, pbsService_1.getChildItems)(show.id, pbsTypes_1.PBS_PARENT_TYPES.SHOW, pbsTypes_1.PBS_CHILD_TYPES.SEASON, { sort: '-ordinal', 'fetch-related': true })));
+        const validSeasons = seasonResponses.map(res => { var _a; return (_a = res.data) === null || _a === void 0 ? void 0 : _a[0]; }).filter(Boolean);
+        if (validSeasons.length === 0) {
+            res.json([]);
+            return;
+        }
+        const firstEpisodeIds = validSeasons
+            .map(season => { var _a, _b; return (_b = (_a = season === null || season === void 0 ? void 0 : season.attributes) === null || _a === void 0 ? void 0 : _a.episodes) === null || _b === void 0 ? void 0 : _b[0].id; })
+            .filter(Boolean);
+        if (firstEpisodeIds.length === 0) {
+            res.json([]);
+            return;
+        }
+        // fetch the assets for each first episode
+        const assetResponses = yield Promise.all(firstEpisodeIds.map(episodeId => (0, pbsService_1.getChildItems)(episodeId, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET)));
+        const episodeAssets = assetResponses
+            .map(res => { var _a; return (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a[0]; })
+            .filter(Boolean);
+        res.json(episodeAssets.slice(0, 3));
     }
     catch (error) {
         next(error);
@@ -63,17 +75,20 @@ router.get('/top-shows', (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
 }));
 router.get('/shows-by-genre/:genreSlug', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const { genreSlug } = req.params;
-        const showsResponse = yield (0, pbsService_1.getList)(pbsTypes_1.PBS_TYPES.SHOW, {
-            'genre-slug': genreSlug,
-            'platform-slug': 'partnerplayer'
-        });
-        if (((_a = showsResponse === null || showsResponse === void 0 ? void 0 : showsResponse.data) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-            showsResponse.data = sgpService_1.serverGenrePopularityService.sortShowsByGenrePopularity([...showsResponse.data], genreSlug);
+        const genreEntry = Object.values(pbsTypes_1.PBS_GENRES).find(genre => genre.slug === genreSlug);
+        if (!genreEntry) {
+            res.status(400).json({ error: "Invalid genre slug" });
+            return;
         }
-        res.json(showsResponse);
+        const showTitles = yield (0, csvService_1.getShowTitlesByGenre)(genreEntry.name);
+        const searchResponses = yield Promise.all(showTitles.map((title) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a;
+            const result = yield (0, pbsService_1.search)(pbsTypes_1.PBS_TYPES.SHOW, { query: title, limit: 1 });
+            return ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0]) || null;
+        })));
+        res.json(searchResponses.filter(Boolean));
     }
     catch (error) {
         next(error);

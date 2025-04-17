@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction, Application } from "express";
 import cors from 'cors';
-import pbsRouter from './routes/frontendRoutes';
+import customApi from './routes/customApi';
+import pbsProxy from './routes/pbsProxy';
 
 // create express app
 const app: Application = express();
@@ -10,7 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 // api routes
-app.use('/pbs-api', pbsRouter);
+app.use('/api', pbsProxy);
+app.use('/api', customApi);
 
 // error handling middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

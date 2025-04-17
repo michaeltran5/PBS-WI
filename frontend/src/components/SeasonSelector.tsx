@@ -1,17 +1,17 @@
-import React from 'react';
 import { Container, SeasonSelect} from '../styled/SeasonSelector.styled';
 
-interface SeasonSelectorProps {
-  seasons: number[];
-  selectedSeason: number | null;
+type Props = {
+  seasonsCount: number;
+  selectedSeason?: number;
   onSeasonChange: (season: number) => void;
 }
 
-const SeasonSelector: React.FC<SeasonSelectorProps> = ({
-  seasons, selectedSeason, onSeasonChange }) => {
-  if (seasons.length <= 1) {
+const SeasonSelector = ({ seasonsCount, selectedSeason, onSeasonChange}: Props)  => {
+  if (seasonsCount < 1) {
     return null;
   }
+
+  const seasons = Array.from({ length: seasonsCount }, (_, i) => i + 1);
 
   return (
     <Container>

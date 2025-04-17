@@ -1,6 +1,7 @@
 import { ButtonText, Container, CoverImage, Description, Details, EpisodeTitle, PremiereDate, ShowTitle, Top, Button, Content } from "../styled/BannerItem.styled";
 import dayjs from "dayjs";
 import { Asset } from "../types/Asset";
+import { getPreferredImage } from "../utils/images";
 
 type Props = {
     asset: Asset;
@@ -18,7 +19,7 @@ export const BannerItem = ({ asset }: Props) => {
 
     return (
         <Container>
-            <CoverImage image={asset.attributes.images?.[0].image || ''} />
+            <CoverImage image={getPreferredImage(asset.attributes.images)} />
             <Content>
                 <Top>
                     <ShowTitle>{asset.attributes.parent_tree?.attributes?.season?.attributes?.show?.attributes?.title?.toUpperCase()}</ShowTitle>

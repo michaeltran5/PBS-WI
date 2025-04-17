@@ -72,9 +72,6 @@ const Header: React.FC = () => {
                             <NavItem as={Link} to="/browse" className="no-underline">
                                 Browse
                             </NavItem>
-                            <NavItem as={Link} to="/watch" className="no-underline">
-                                Watch
-                            </NavItem>
                             <NavItem as={Link} to="/live" className="no-underline">
                                 Live
                             </NavItem>

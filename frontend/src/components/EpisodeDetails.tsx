@@ -1,20 +1,15 @@
-import React from 'react';
-import { useGetAssetByIdQuery } from '../redux/rtkQuery/pbsWiApi';
+import { useGetAssetByEpisodeIdQuery } from '../redux/rtkQuery/pbsWiApi';
 import {
  Container, ShowTitle, EpisodeTitle, EpisodeInfo, Description, Metadata, MetadataSeparator, LoadingText, ErrorText
 } from '../styled/EpisodeDetails.styled';
+import { skipToken } from '@reduxjs/toolkit/query';
 
-interface EpisodeDetailsProps {
+type Props = {
   episodeId?: string;
 }
-
-export const EpisodeDetails: React.FC<EpisodeDetailsProps> = ({ 
-  episodeId = 'c445e87d-40fd-43f1-9ac2-36725d4fea37'
-}) => {
-  const { data, isLoading, error } = useGetAssetByIdQuery(episodeId);
+export const EpisodeDetails = ({ episodeId }: Props) => {
+  const { data: episode, isLoading, error } = useGetAssetByEpisodeIdQuery(episodeId ? { id: episodeId } : skipToken);
   
-  const episode = data?.data;
-
   if (isLoading) {
     return <LoadingText>Loading episode details...</LoadingText>;
   }
