@@ -1,5 +1,7 @@
 import AWS from 'aws-sdk';
 import dotenv from 'dotenv';
+import { PersonalizeItem } from '../types/PersonalizeItem';
+import { cache, cacheFetch, generateCacheKey } from '../utils/cache';
 
 dotenv.config();
 
@@ -8,12 +10,6 @@ AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
 
 // Create a Personalize Runtime client
 const personalizeRuntime = new AWS.PersonalizeRuntime();
-
-// Define the PersonalizeItem interface
-export interface PersonalizeItem {
-  itemId: string;
-  score?: number;
-}
 
 // Store your recommender ARNs in environment variables
 const MORE_LIKE_RECOMMENDER_ARN = process.env.PERSONALIZE_MORE_LIKE_RECOMMENDER_ARN;
@@ -29,21 +25,19 @@ export const getUserRecommendations = async (userId: string, numResults = 10): P
   if (!TOP_PICKS_RECOMMENDER_ARN) {
     throw new Error('TOP_PICKS_RECOMMENDER_ARN environment variable is not configured');
   }
+
+  const cacheKey = generateCacheKey('personalize_top_picks', { userId, numResults });
   
-  const params = {
-    recommenderArn: TOP_PICKS_RECOMMENDER_ARN,
-    userId: userId,
-    numResults: numResults
-  };
-  
-  try {
+  return cacheFetch(cache, cacheKey, async () => {
+    const params = {
+      recommenderArn: TOP_PICKS_RECOMMENDER_ARN,
+      userId,
+      numResults,
+    };
+
     const response = await personalizeRuntime.getRecommendations(params).promise();
-    // Explicitly cast the response to our PersonalizeItem[] type
     return (response.itemList || []) as PersonalizeItem[];
-  } catch (error) {
-    console.error('Error getting top picks recommendations:', error);
-    throw error;
-  }
+  });
 };
 
 /**
@@ -55,26 +49,21 @@ export const getRelatedItems = async (itemId: string, userId?: string, numResult
   if (!BECAUSE_YOU_WATCHED_RECOMMENDER_ARN) {
     throw new Error('BECAUSE_YOU_WATCHED_RECOMMENDER_ARN environment variable is not configured');
   }
+
+  const cacheKey = generateCacheKey('personalize_related', { itemId, userId, numResults });
   
-  const params: AWS.PersonalizeRuntime.GetRecommendationsRequest = {
-    recommenderArn: BECAUSE_YOU_WATCHED_RECOMMENDER_ARN,
-    itemId: itemId,
-    numResults: numResults
-  };
-  
-  // Optionally add userId if available for context
-  if (userId) {
-    params.userId = userId;
-  }
-  
-  try {
+  return cacheFetch(cache, cacheKey, async () => {
+    const params: AWS.PersonalizeRuntime.GetRecommendationsRequest = {
+      recommenderArn: BECAUSE_YOU_WATCHED_RECOMMENDER_ARN,
+      itemId,
+      numResults,
+    };
+
+    if (userId) params.userId = userId;
+
     const response = await personalizeRuntime.getRecommendations(params).promise();
-    // Explicitly cast the response to our PersonalizeItem[] type
     return (response.itemList || []) as PersonalizeItem[];
-  } catch (error) {
-    console.error('Error getting "because you watched" recommendations:', error);
-    throw error;
-  }
+  });
 };
 
 /**
@@ -86,18 +75,16 @@ export const getMoreLike = async (itemId: string, numResults = 10): Promise<Pers
     throw new Error('MORE_LIKE_RECOMMENDER_ARN environment variable is not configured');
   }
   
-  const params = {
-    recommenderArn: MORE_LIKE_RECOMMENDER_ARN,
-    itemId: itemId,
-    numResults: numResults
-  };
-  
-  try {
+  const cacheKey = generateCacheKey('personalize_more_like', { itemId, numResults });
+
+  return cacheFetch(cache, cacheKey, async () => {
+    const params = {
+      recommenderArn: MORE_LIKE_RECOMMENDER_ARN,
+      itemId,
+      numResults,
+    };
+
     const response = await personalizeRuntime.getRecommendations(params).promise();
-    // Explicitly cast the response to our PersonalizeItem[] type
     return (response.itemList || []) as PersonalizeItem[];
-  } catch (error) {
-    console.error('Error getting "more like" recommendations:', error);
-    throw error;
-  }
+  });
 };

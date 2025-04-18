@@ -1,6 +1,6 @@
 import { getItem } from './pbsService';
 import { PBS_TYPES } from '../constants/pbsTypes';
-import { PersonalizeItem } from './personalizeService';
+import { PersonalizeItem } from '../types/PersonalizeItem';
 
 /**
  * Map Personalize item IDs to full content objects using PBS API

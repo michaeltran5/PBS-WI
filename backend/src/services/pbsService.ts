@@ -48,14 +48,19 @@ export const getChangelog = async (params: Record<string, any> = {}) => {
   return getRequest('/changelog/', params);
 };
 
-export const getAssetByTPMediaId = async (tpMediaId: string) => {
-  let response = await getRequest('/assets/legacy/', { tp_media_id: tpMediaId });
+export const getAssetByTPMediaId = async (tpMediaId: string): Promise<any | null> => {
+  const response = await getRequest('/assets/legacy/', { tp_media_id: tpMediaId });
 
-  if (response.errors?.status === 404) {
-    const match = response.errors.data?.url?.match(/\/assets\/(.*?)\//);
-    if (match) {
-      response = await getRequest(`/assets/${match[1]}/edit/`);
+  const httpCode = response?.errors?.info?.http_code;
+  const redirectUrl = response?.errors?.info?.url;
+
+  if (httpCode === 404 && redirectUrl) {
+    const match = redirectUrl.match(/.*?(\/assets\/.*)\/$/);
+    if (match && match[1]) {
+      const fallbackEndpoint = `${match[1]}/edit/`;
+      return await getRequest(fallbackEndpoint);
     }
+    return null;
   }
 
   return response;

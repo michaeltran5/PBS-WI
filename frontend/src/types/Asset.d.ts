@@ -26,6 +26,7 @@ export type Asset = {
           attributes?: {
             ordinal?: number;
             show?: {
+              id: string;
               attributes?: {
                 title?: string;
               }
