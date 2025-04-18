@@ -35,7 +35,7 @@ const MediaPlayer = () => {
     data: initialSeasonsResponse,
     isLoading: isInitialLoading
   } = useGetShowSeasonsQuery(
-    showId ? { id: showId, params: { page: 1 } } : skipToken
+    showId ? { id: showId, params: { page: 1, sort: '-ordinal' } } : skipToken
   );
 
   const seasonPage = initialSeasonsResponse?.pagination?.count

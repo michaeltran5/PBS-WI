@@ -1,12 +1,12 @@
-import express, { Request, Response, NextFunction } from 'express';
-import { getChildItems, getList, search } from '../services/pbsService';
+import express from 'express';
+import { getChildItems, search } from '../services/pbsService';
 import { PBS_CHILD_TYPES, PBS_GENRES, PBS_PARENT_TYPES, PBS_TYPES } from '../constants/pbsTypes';
 import { getTopShowTitles } from '../services/ga4Service';
-import { getShowTitlesByGenre } from '../services/csvService';
+import { getMostRecentlyWatchedShow, getShowTitlesByGenre } from '../services/csvService';
 
 const router = express.Router();
 
-router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/carousel-assets', async (_req, res, next) => {
   try {
     // get top show titles
     const topShowTitles = await getTopShowTitles("1daysAgo", undefined, 6);
@@ -27,7 +27,7 @@ router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFu
       return;
     }
 
-    // fetch first season of each show
+    // fetch latest season of each show
     const seasonResponses = await Promise.all(
       validShows.map(show =>
         getChildItems(show.id, PBS_PARENT_TYPES.SHOW, PBS_CHILD_TYPES.SEASON, { sort: '-ordinal', 'fetch-related': true })
@@ -50,7 +50,7 @@ router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFu
       return;
     }
 
-    // fetch the assets for each first episode
+    // fetch the assets for each latest episode
     const assetResponses = await Promise.all(
       firstEpisodeIds.map(episodeId =>
         getChildItems(episodeId, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET)
@@ -67,27 +67,7 @@ router.get('/carousel-assets', async (_req: Request, res: Response, next: NextFu
   }
 });
 
-router.get('/top-shows', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const params = req.query;
-
-    const localParams = { ...params, 'audience-scope': 'local', audience: 'wpne' }
-
-    const localShows = await getList(PBS_TYPES.SHOW, localParams);
-    const nonLocalShows = await getList(PBS_TYPES.SHOW, params);
-
-    const mixedShows = [
-      ...localShows.data.slice(0, 5),
-      ...nonLocalShows.data.slice(0, 5),
-    ];
-
-    res.json(mixedShows);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/shows-by-genre/:genreSlug', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/shows-by-genre/:genreSlug', async (req, res, next) => {
   try {
     const { genreSlug } = req.params;
 
@@ -109,6 +89,21 @@ router.get('/shows-by-genre/:genreSlug', async (req: Request, res: Response, nex
 
     res.json(searchResponses.filter(Boolean)); 
 
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/most-recent/:uid', async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await getMostRecentlyWatchedShow(uid);
+
+    if (result) {
+      res.json(result);
+    } else {
+      res.status(404).json({ error: 'No viewing history found for user.' });
+    }
   } catch (error) {
     next(error);
   }

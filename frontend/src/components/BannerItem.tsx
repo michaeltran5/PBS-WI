@@ -2,11 +2,14 @@ import { ButtonText, Container, CoverImage, Description, Details, EpisodeTitle, 
 import dayjs from "dayjs";
 import { Asset } from "../types/Asset";
 import { getPreferredImage } from "../utils/images";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
     asset: Asset;
 }
 export const BannerItem = ({ asset }: Props) => {
+    const navigate = useNavigate();
+    
     const formatDuration = (durationInSeconds: number = 0) => {
         const hours = Math.floor(durationInSeconds / 3600);
         const minutes = Math.floor((durationInSeconds % 3600) / 60);
@@ -15,6 +18,10 @@ export const BannerItem = ({ asset }: Props) => {
             return `${hours}h ${minutes}m`;
         }
         return `${minutes}m`;
+    };
+
+    const handleClick = () => {
+        navigate(`/watch/${asset.attributes.parent_tree?.attributes?.season?.attributes?.show?.id}`);
     };
 
     return (
@@ -29,7 +36,7 @@ export const BannerItem = ({ asset }: Props) => {
                         <Description>{asset.attributes.description_short}</Description>
                     </Details>
                 </Top>
-                <Button>
+                <Button onClick={handleClick}>
                     <ButtonText>WATCH LATEST EPISODE</ButtonText>
                 </Button>
             </Content>

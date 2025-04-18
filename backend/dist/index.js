@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const customApi_1 = __importDefault(require("./routes/customApi"));
 const pbsProxy_1 = __importDefault(require("./routes/pbsProxy"));
+const personalizeApi_1 = __importDefault(require("./routes/personalizeApi"));
 // create express app
 const app = (0, express_1.default)();
 // middleware
@@ -15,6 +16,7 @@ app.use(express_1.default.json());
 // api routes
 app.use('/api', pbsProxy_1.default);
 app.use('/api', customApi_1.default);
+app.use('/api', personalizeApi_1.default);
 // error handling middleware
 app.use((err, _req, res, _next) => {
     console.error('Error:', err.message);

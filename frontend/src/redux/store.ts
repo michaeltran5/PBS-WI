@@ -1,10 +1,12 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { customApi } from './rtkQuery/customApi';
 import { pbsWiApi } from './rtkQuery/pbsWiApi';
+import { personalizeApi } from './rtkQuery/personalizeApi';
 
 const rootReducer = combineReducers({
   [customApi.reducerPath]: customApi.reducer,
-  [pbsWiApi.reducerPath]: pbsWiApi.reducer
+  [pbsWiApi.reducerPath]: pbsWiApi.reducer,
+  [personalizeApi.reducerPath]: personalizeApi.reducer
 });
 
 export const store = configureStore({
@@ -15,6 +17,7 @@ export const store = configureStore({
     })
       .concat(customApi.middleware)
       .concat(pbsWiApi.middleware)
+      .concat(personalizeApi.middleware)
 });
 
 

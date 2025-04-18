@@ -61,13 +61,17 @@ const getChangelog = (...args_1) => __awaiter(void 0, [...args_1], void 0, funct
 });
 exports.getChangelog = getChangelog;
 const getAssetByTPMediaId = (tpMediaId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
-    let response = yield (0, exports.getRequest)('/assets/legacy/', { tp_media_id: tpMediaId });
-    if (((_a = response.errors) === null || _a === void 0 ? void 0 : _a.status) === 404) {
-        const match = (_c = (_b = response.errors.data) === null || _b === void 0 ? void 0 : _b.url) === null || _c === void 0 ? void 0 : _c.match(/\/assets\/(.*?)\//);
-        if (match) {
-            response = yield (0, exports.getRequest)(`/assets/${match[1]}/edit/`);
+    var _a, _b, _c, _d;
+    const response = yield (0, exports.getRequest)('/assets/legacy/', { tp_media_id: tpMediaId });
+    const httpCode = (_b = (_a = response === null || response === void 0 ? void 0 : response.errors) === null || _a === void 0 ? void 0 : _a.info) === null || _b === void 0 ? void 0 : _b.http_code;
+    const redirectUrl = (_d = (_c = response === null || response === void 0 ? void 0 : response.errors) === null || _c === void 0 ? void 0 : _c.info) === null || _d === void 0 ? void 0 : _d.url;
+    if (httpCode === 404 && redirectUrl) {
+        const match = redirectUrl.match(/.*?(\/assets\/.*)\/$/);
+        if (match && match[1]) {
+            const fallbackEndpoint = `${match[1]}/edit/`;
+            return yield (0, exports.getRequest)(fallbackEndpoint);
         }
+        return null;
     }
     return response;
 });
