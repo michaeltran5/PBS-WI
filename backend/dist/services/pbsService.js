@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAssets = exports.getShowByProgramId = exports.getAssetByTPMediaId = exports.getChangelog = exports.alterPbsImage = exports.extractImage = exports.getImages = exports.getChildItems = exports.search = exports.getList = exports.getItem = exports.getRequest = void 0;
+exports.findShowByAnyId = exports.getAssetByCID = exports.getAssets = exports.getShowByProgramId = exports.getAssetByTPMediaId = exports.getChangelog = exports.alterPbsImage = exports.extractImage = exports.getImages = exports.getChildItems = exports.search = exports.getList = exports.getItem = exports.getRequest = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const utc_1 = __importDefault(require("dayjs/plugin/utc"));
 const client_1 = require("../client");
@@ -86,3 +86,69 @@ const getAssets = (parentId_1, parentType_1, ...args_1) => __awaiter(void 0, [pa
         (window === 'all' || window === asset.attributes.mvod_window));
 });
 exports.getAssets = getAssets;
+// Add this function to pbsService.js
+const getAssetByCID = (cid) => __awaiter(void 0, void 0, void 0, function* () {
+    const url = `https://media.services.pbs.org/api/v1/assets/${cid}`;
+    const headers = {
+        Authorization: `Basic ${Buffer.from(`${process.env.PBS_CLIENT_ID}:${process.env.PBS_CLIENT_SECRET}`).toString('base64')}`,
+        Accept: 'application/json'
+    };
+    try {
+        const response = yield fetch(url, { headers });
+        if (!response.ok) {
+            console.error(`Failed to fetch asset for CID ${cid}`, response.statusText);
+            return null;
+        }
+        return yield response.json();
+    }
+    catch (err) {
+        console.error(`Error fetching asset for CID ${cid}`, err);
+        return null;
+    }
+});
+exports.getAssetByCID = getAssetByCID;
+const findShowByAnyId = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g;
+    try {
+        console.log(`Attempting to find show for ID: ${id}`);
+        // First, try searching shows by UUID
+        try {
+            console.log(`Trying show search by UUID: ${id}`);
+            const searchResponse = yield (0, exports.search)('show', { uuid: id });
+            if ((_a = searchResponse === null || searchResponse === void 0 ? void 0 : searchResponse.data) === null || _a === void 0 ? void 0 : _a.length) {
+                console.log(`Found show by UUID: ${(_b = searchResponse.data[0].attributes) === null || _b === void 0 ? void 0 : _b.title}`);
+                return searchResponse.data[0]; // Return the first match
+            }
+        }
+        catch (searchError) {
+            console.log(`Show UUID search failed for ID: ${id}`);
+        }
+        // Try legacy lookup with TP Media ID
+        try {
+            console.log(`Trying legacy asset lookup for: ${id}`);
+            const legacyResponse = yield (0, exports.getAssetByTPMediaId)(id);
+            if (legacyResponse === null || legacyResponse === void 0 ? void 0 : legacyResponse.data) {
+                const parentTree = (_c = legacyResponse.data.attributes) === null || _c === void 0 ? void 0 : _c.parent_tree;
+                const show = (_f = (_e = (_d = parentTree === null || parentTree === void 0 ? void 0 : parentTree.attributes) === null || _d === void 0 ? void 0 : _d.season) === null || _e === void 0 ? void 0 : _e.attributes) === null || _f === void 0 ? void 0 : _f.show;
+                if (show === null || show === void 0 ? void 0 : show.id) {
+                    console.log(`Found show ID ${show.id} from parent_tree`);
+                    const showResponse = yield (0, exports.getItem)(show.id, 'show');
+                    if (showResponse === null || showResponse === void 0 ? void 0 : showResponse.data) {
+                        console.log(`Successfully retrieved show ${(_g = showResponse.data.attributes) === null || _g === void 0 ? void 0 : _g.title}`);
+                        return showResponse.data;
+                    }
+                }
+            }
+        }
+        catch (legacyError) {
+            console.log(`Legacy lookup failed for ID: ${id}`);
+        }
+        console.log(`Could not resolve show for ID: ${id}`);
+        return null;
+    }
+    catch (error) {
+        console.error(`Error in findShowByAnyId for ID ${id}:`, error);
+        return null;
+    }
+});
+exports.findShowByAnyId = findShowByAnyId;

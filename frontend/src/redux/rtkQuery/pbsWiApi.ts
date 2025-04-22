@@ -5,6 +5,33 @@ import { Episode } from '../../types/Episode';
 import { Season } from '../../types/Season';
 import { Pagination } from '../../types/Pagination';
 
+// Define response types to handle the data property
+interface BaseResponse {
+    data?: unknown;
+    meta?: {
+        pagination?: Pagination;
+    };
+    links?: {
+        next: string | null;
+    };
+}
+
+interface AssetResponse extends BaseResponse {
+    data: Asset | Asset[];
+}
+
+interface ShowResponse extends BaseResponse {
+    data: Show;
+}
+
+interface SeasonResponse extends BaseResponse {
+    data: Season[];
+}
+
+interface EpisodeResponse extends BaseResponse {
+    data: Episode[];
+}
+
 const baseQuery = fetchBaseQuery({
     baseUrl: `http://localhost:3000/api/pbs-api/`,
 });
@@ -13,36 +40,44 @@ export const pbsWiApi = createApi({
     reducerPath: 'pbsWiApi',
     baseQuery,
     endpoints: (builder) => ({
-        getAssetByEpisodeId: builder.query<Asset, { id: string, params?: Record<string, any> }>({
+        getAssetByEpisodeId: builder.query<Asset, { id: string, params?: Record<string, string> }>({
             query: ({ id, params }) => ({
                 url: `episodes/${id}/assets`,
                 params
             }),
-            transformResponse: (response: any) => {
-                const assets = response?.data || [];
-                return assets.find((a: any) => a.attributes?.object_type === "full_length");
+            transformResponse: (response: AssetResponse) => {
+                const assets = Array.isArray(response.data) ? response.data : [];
+                return assets.find((a) => a.attributes?.object_type === "full_length") as Asset;
             }
         }),
-        getShowById: builder.query<Show, { id: string, params?: Record<string, any> }>({
+        getAssetById: builder.query<Asset, string>({
+            query: (id) => ({
+                url: `assets/${id}`
+            }),
+            transformResponse: (response: AssetResponse) => {
+                return Array.isArray(response.data) ? response.data[0] : response.data;
+            }
+        }),
+        getShowById: builder.query<Show, { id: string, params?: Record<string, string> }>({
             query: ({ id, params }) => ({
                 url: `shows/${id}`,
                 params
             }),
-            transformResponse: (response: any) => {
-                return response?.data || response;
+            transformResponse: (response: ShowResponse) => {
+                return response.data;
             }
         }),
-        getShowSeasons: builder.query<{ items: Season[], pagination: Pagination }, { id: string, params?: Record<string, any> }>({
+        getShowSeasons: builder.query<{ items: Season[], pagination: Pagination }, { id: string, params?: Record<string, string> }>({
             query: ({ id, params }) => ({
                 url: `shows/${id}/seasons`,
                 params
             }),
-            transformResponse: (response: any) => ({
-                items: response?.data,
-                pagination: response?.meta?.pagination
+            transformResponse: (response: SeasonResponse) => ({
+                items: response.data,
+                pagination: response.meta?.pagination as Pagination
             }),
         }),
-        getSeasonEpisodes: builder.query<{ items: Episode[], pagination: Pagination }, { id: string, params?: Record<string, any> }>({
+        getSeasonEpisodes: builder.query<{ items: Episode[], pagination: Pagination }, { id: string, params?: Record<string, string> }>({
             query: ({ id, params }) => ({
                 url: `seasons/${id}/episodes`,
                 params: {
@@ -51,15 +86,15 @@ export const pbsWiApi = createApi({
                     'sort': 'ordinal'
                 }
             }),
-            transformResponse: (response: any) => ({
-                items: response?.data,
+            transformResponse: (response: EpisodeResponse) => ({
+                items: response.data,
                 pagination: {
-                    ...response?.meta?.pagination,
-                    has_more: response?.links?.next !== null
+                    ...response.meta?.pagination as Pagination,
+                    has_more: response.links?.next !== null
                 }
             }),
             merge: (currentCache, newData, { arg }) => {
-                if (arg.params?.page === 1) return newData;
+                if (arg.params?.page === '1') return newData;
 
                 return {
                     ...newData,
@@ -76,6 +111,7 @@ export const pbsWiApi = createApi({
 
 export const {
     useGetAssetByEpisodeIdQuery,
+    useGetAssetByIdQuery,
     useGetShowByIdQuery,
     useGetShowSeasonsQuery,
     useGetSeasonEpisodesQuery

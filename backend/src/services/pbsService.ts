@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { PBSAssetType, PBSChildType, PBSParentType, PBSType, PBSWindowType } from '../constants/pbsTypes';
+import { PBSAssetType, PBSChildType, PBSParentType, PBSType, PBSWindowType, PBS_TYPES } from '../constants/pbsTypes';
 import { pbsApiClient } from '../client';
 
 dayjs.extend(utc);
@@ -76,4 +76,71 @@ export const getAssets = async (parentId: string, parentType: PBSParentType, ass
     (assetType === 'all' || assetType === asset.attributes.object_type) &&
     (window === 'all' || window === asset.attributes.mvod_window)
   );
+};
+
+// Add this function to pbsService.js
+
+export const getAssetByCID = async (cid: string) => {
+  const url = `https://media.services.pbs.org/api/v1/assets/${cid}`;
+  const headers = {
+    Authorization: `Basic ${Buffer.from(`${process.env.PBS_CLIENT_ID}:${process.env.PBS_CLIENT_SECRET}`).toString('base64')}`,
+    Accept: 'application/json'
+  };
+
+  try {
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      console.error(`Failed to fetch asset for CID ${cid}`, response.statusText);
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.error(`Error fetching asset for CID ${cid}`, err);
+    return null;
+  }
+};
+
+export const findShowByAnyId = async (id: string): Promise<any> => {
+  try {
+    console.log(`Attempting to find show for ID: ${id}`);
+
+    // First, try searching shows by UUID
+    try {
+      console.log(`Trying show search by UUID: ${id}`);
+      const searchResponse = await search('show', { uuid: id });
+      if (searchResponse?.data?.length) {
+        console.log(`Found show by UUID: ${searchResponse.data[0].attributes?.title}`);
+        return searchResponse.data[0]; // Return the first match
+      }
+    } catch (searchError) {
+      console.log(`Show UUID search failed for ID: ${id}`);
+    }
+
+    // Try legacy lookup with TP Media ID
+    try {
+      console.log(`Trying legacy asset lookup for: ${id}`);
+      const legacyResponse = await getAssetByTPMediaId(id);
+      if (legacyResponse?.data) {
+        const parentTree = legacyResponse.data.attributes?.parent_tree;
+        const show = parentTree?.attributes?.season?.attributes?.show;
+
+        if (show?.id) {
+          console.log(`Found show ID ${show.id} from parent_tree`);
+          const showResponse = await getItem(show.id, 'show');
+          if (showResponse?.data) {
+            console.log(`Successfully retrieved show ${showResponse.data.attributes?.title}`);
+            return showResponse.data;
+          }
+        }
+      }
+    } catch (legacyError) {
+      console.log(`Legacy lookup failed for ID: ${id}`);
+    }
+
+    console.log(`Could not resolve show for ID: ${id}`);
+    return null;
+  } catch (error) {
+    console.error(`Error in findShowByAnyId for ID ${id}:`, error);
+    return null;
+  }
 };

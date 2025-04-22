@@ -1,3 +1,5 @@
+// Update frontend/src/components/MediaCarousel.tsx
+
 import { MediaCard } from "./MediaCard";
 import 'react-multi-carousel/lib/styles.css';
 import { Container, StyledCarousel } from "../styled/MediaCarousel.styled";
@@ -8,6 +10,15 @@ export type Props = {
     shows: Show[];
 }
 export const MediaCarousel = ({ shows }: Props) => {
+    // Safety check for invalid shows array
+    if (!shows || !Array.isArray(shows)) {
+        console.warn('MediaCarousel received invalid shows data:', shows);
+        return null;
+    }
+
+    // Filter out any invalid shows
+    const validShows = shows.filter(show => show && show.id);
+
     const responsive = {
         largeDesktop: {
             breakpoint: { max: Number.MAX_SAFE_INTEGER, min: 1440 },
@@ -41,16 +52,21 @@ export const MediaCarousel = ({ shows }: Props) => {
         }
     };
 
+    // If no valid shows, don't render the carousel
+    if (validShows.length === 0) {
+        return null;
+    }
+
     return (
         <Container>
             <StyledCarousel
                 responsive={responsive}
                 itemClass="carouselItem"
             >
-                {shows.map((show) => (
-                    <MediaCard key={show.id} show={show} />
+                {validShows.map(show => (
+                    <MediaCard key={`show-${show.id}`} show={show} />
                 ))}
             </StyledCarousel>
         </Container>
     );
-}
+};
