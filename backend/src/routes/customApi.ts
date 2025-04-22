@@ -1,5 +1,5 @@
 import express from 'express';
-import { getChildItems, search } from '../services/pbsService';
+import { getChildItems, search, getRequest } from '../services/pbsService';
 import { PBS_CHILD_TYPES, PBS_GENRES, PBS_PARENT_TYPES, PBS_TYPES } from '../constants/pbsTypes';
 import { getTopShowTitles } from '../services/ga4Service';
 import { getMostRecentlyWatchedShow, getShowTitlesByGenre } from '../services/csvService';
@@ -106,6 +106,89 @@ router.get('/most-recent/:uid', async (req, res, next) => {
     }
   } catch (error) {
     next(error);
+  }
+});
+
+// Get PBS asset by ID
+router.get('/asset/:assetId', async (req, res, next) => {
+  try {
+    const { assetId } = req.params;
+    
+    // Call PBS API to get the asset
+    const response = await getRequest(`/assets/${assetId}/`);
+    
+    // Return the data
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/top-picks-assets', async (_req, res, next) => {
+  try {
+    // Define a list of featured asset IDs that you want to display
+    // This is our known working asset from the example
+    const featuredAssetIds = [
+      '0e9060f2-fead-43c5-9dc2-ae99b8613b88',
+      // Add more valid asset IDs here if needed
+    ];
+    
+    console.log(`Fetching ${featuredAssetIds.length} PBS assets...`);
+    
+    // Get all assets in parallel, with error handling
+    const assetPromises = featuredAssetIds.map(id => 
+      getRequest(`/assets/${id}/`)
+        .catch(error => {
+          console.log(`Error fetching asset ID ${id}: ${error.message || 'Unknown error'}`);
+          return null; // Return null for failed requests
+        })
+    );
+    
+    const assetResponses = await Promise.all(assetPromises);
+    console.log(`Received ${assetResponses.filter(Boolean).length} successful responses out of ${featuredAssetIds.length} requests`);
+    
+    // Filter out null responses and format the rest
+    const formattedAssets = assetResponses
+      .filter(response => response !== null && response.data)
+      .map(response => {
+        try {
+          const asset = response.data;
+          const showId = asset.attributes?.parent_tree?.attributes?.season?.attributes?.show?.id;
+          
+          // Log details for debugging
+          console.log(`Processing asset: ${asset.id}, title: ${asset.attributes?.title}`);
+          
+          return {
+            id: asset.id,
+            attributes: {
+              title: asset.attributes?.title || 'Untitled',
+              description_short: asset.attributes?.description_short || '',
+              description_long: asset.attributes?.description_long || '',
+              premiered_on: asset.attributes?.premiered_on || null,
+              genre: {
+                id: "custom",
+                title: "PBS Featured",
+                slug: "pbs-featured"
+              },
+              images: asset.attributes?.images || [],
+              duration: asset.attributes?.duration || 0,
+              parent_tree: asset.attributes?.parent_tree || null
+            },
+            showId: showId || asset.id // Fallback to asset ID if show ID is not available
+          };
+        } catch (error) {
+          console.error('Error formatting asset:', error);
+          return null;
+        }
+      })
+      .filter(Boolean); // Filter out null entries from formatting errors
+    
+    console.log(`Returning ${formattedAssets.length} formatted assets`);
+    res.json(formattedAssets);
+  } catch (error) {
+    console.error('Error in top-picks-assets endpoint:', error);
+    // Return an empty array instead of an error to prevent frontend crashes
+    res.json([]);
   }
 });
 
