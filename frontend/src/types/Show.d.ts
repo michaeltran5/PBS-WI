@@ -18,6 +18,7 @@ export type Show = {
             image?: string;
             profile: string;
         }>
+        featured_preview?: string;
     },
     seasons_count?: number;
     showId?: string;

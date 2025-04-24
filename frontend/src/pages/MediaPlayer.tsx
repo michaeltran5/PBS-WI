@@ -1,5 +1,3 @@
-// Update frontend/src/pages/MediaPlayer.tsx
-
 import { useState, useEffect, useRef } from 'react';
 import { VideoPlayer } from '../components/VideoPlayer';
 import { EpisodesList } from '../components/EpisodesList';
@@ -14,18 +12,21 @@ import {
 } from '../styled/MediaPlayer.styled';
 import { useGetShowByIdQuery, useGetShowSeasonsQuery } from '../redux/rtkQuery/pbsWiApi';
 import { skipToken } from '@reduxjs/toolkit/query';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 
 const MediaPlayer = () => {
   const { showId } = useParams<{ showId: string }>();
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const assetId = queryParams.get('assetId') || undefined;
+  const [searchParams] = useSearchParams();
   
-  console.log('MediaPlayer mounted with:', { showId, assetId, search: location.search });
+  // Get episodeId from search params or assetId from query params
+  const initialEpisodeId = searchParams.get('episodeId') || undefined;
+  const assetId = searchParams.get('assetId') || new URLSearchParams(location.search).get('assetId') || undefined;
+  
+  console.log('MediaPlayer mounted with:', { showId, assetId, initialEpisodeId, search: location.search });
   
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
-  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | undefined>(undefined);
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | undefined>(initialEpisodeId);
   const [activeTab, setActiveTab] = useState<string>('about');
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -75,6 +76,10 @@ const MediaPlayer = () => {
   const { data: genreShowsResponse, isLoading: recommendationsLoading } =
     useGetShowsByGenreQuery(showData?.attributes?.genre?.slug ? { genreSlug: showData.attributes.genre.slug } : skipToken);
 
+  // Filter out the current show from recommendations
+  const filteredRecommendations = genreShowsResponse 
+    ? genreShowsResponse.filter(show => show.id !== showId)
+    : [];
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -111,7 +116,7 @@ const MediaPlayer = () => {
     return (
       <Container>
         <Content>
-          <VideoPlayer assetId={assetId} fullWidth={true} />
+          <VideoPlayer episodeId={assetId} fullWidth={true} />
         </Content>
       </Container>
     );
@@ -163,12 +168,12 @@ const MediaPlayer = () => {
                 <RecommendationsLoadingText>Loading recommendations...</RecommendationsLoadingText>
               )}
 
-              {!recommendationsLoading && (!genreShowsResponse || genreShowsResponse.length === 0) && (
+              {!recommendationsLoading && filteredRecommendations.length === 0 && (
                 <NoRecommendationsText>No recommendations available</NoRecommendationsText>
               )}
 
-              {genreShowsResponse && genreShowsResponse.length > 0 && (
-                <RecommendedShows shows={genreShowsResponse} />
+              {filteredRecommendations.length > 0 && (
+                <RecommendedShows shows={filteredRecommendations} />
               )}
             </RecommendationsContainer>
           </TabPanel>

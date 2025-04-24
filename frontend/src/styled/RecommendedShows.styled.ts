@@ -25,9 +25,17 @@ export const ShowCard = styled.div`
 export const ThumbnailContainer = styled.div`
   width: 210px;
   height: 118px;
-  border-radius: 4px;
+  border-radius: 2px;
   overflow: hidden;
   margin-bottom: 8px;
+  margin-top: 4px; /* Added small margin to the top */
+  border: 3px solid transparent;
+  transition: transform 0.3s ease-in-out, border 0.3s ease-in-out;
+  
+  &:hover {
+    transform: scale(1.05);
+    border: 3px solid white;
+  }
 `;
 
 export const Thumbnail = styled.img`

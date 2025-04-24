@@ -106,6 +106,15 @@ export const pbsWiApi = createApi({
                 return currentArg?.params?.page !== previousArg?.params?.page;
             }
         }),
+        getAssetById: builder.query<any, { id: string, params?: Record<string, any> }>({
+            query: ({ id, params }) => ({
+                url: `assets/${id}`,
+                params
+            }),
+            transformResponse: (response: any) => {
+                return response?.data || response;
+            }
+        }),
     }),
 });
 
@@ -114,5 +123,6 @@ export const {
     useGetAssetByIdQuery,
     useGetShowByIdQuery,
     useGetShowSeasonsQuery,
-    useGetSeasonEpisodesQuery
+    useGetSeasonEpisodesQuery,
+    useGetAssetByIdQuery
 } = pbsWiApi;
