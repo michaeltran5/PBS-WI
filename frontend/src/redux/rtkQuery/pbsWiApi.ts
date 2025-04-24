@@ -50,12 +50,24 @@ export const pbsWiApi = createApi({
                 return assets.find((a) => a.attributes?.object_type === "full_length") as Asset;
             }
         }),
-        getAssetById: builder.query<Asset, string>({
-            query: (id) => ({
-                url: `assets/${id}`
-            }),
-            transformResponse: (response: AssetResponse) => {
-                return Array.isArray(response.data) ? response.data[0] : response.data;
+        getAssetById: builder.query<Asset, string | { id: string, params?: Record<string, any> }>({
+            query: (arg) => {
+                if (typeof arg === 'string') {
+                    return {
+                        url: `assets/${arg}`
+                    };
+                } else {
+                    return {
+                        url: `assets/${arg.id}`,
+                        params: arg.params
+                    };
+                }
+            },
+            transformResponse: (response: AssetResponse | any) => {
+                if (response?.data) {
+                    return Array.isArray(response.data) ? response.data[0] : response.data;
+                }
+                return response;
             }
         }),
         getShowById: builder.query<Show, { id: string, params?: Record<string, string> }>({
@@ -67,7 +79,7 @@ export const pbsWiApi = createApi({
                 return response.data;
             }
         }),
-        getShowSeasons: builder.query<{ items: Season[], pagination: Pagination }, { id: string, params?: Record<string, string> }>({
+        getShowSeasons: builder.query<{ items: Season[], pagination: Pagination }, { id: string, params?: Record<number, string> }>({
             query: ({ id, params }) => ({
                 url: `shows/${id}/seasons`,
                 params
@@ -106,15 +118,6 @@ export const pbsWiApi = createApi({
                 return currentArg?.params?.page !== previousArg?.params?.page;
             }
         }),
-        getAssetById: builder.query<any, { id: string, params?: Record<string, any> }>({
-            query: ({ id, params }) => ({
-                url: `assets/${id}`,
-                params
-            }),
-            transformResponse: (response: any) => {
-                return response?.data || response;
-            }
-        }),
     }),
 });
 
@@ -123,6 +126,5 @@ export const {
     useGetAssetByIdQuery,
     useGetShowByIdQuery,
     useGetShowSeasonsQuery,
-    useGetSeasonEpisodesQuery,
-    useGetAssetByIdQuery
+    useGetSeasonEpisodesQuery
 } = pbsWiApi;

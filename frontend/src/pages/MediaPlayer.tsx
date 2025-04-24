@@ -56,7 +56,7 @@ const MediaPlayer = () => {
     data: initialSeasonsResponse,
     isLoading: isInitialLoading
   } = useGetShowSeasonsQuery(
-    shouldFetchShowData ? { id: showId, params: { page: 1, sort: '-ordinal' } } : skipToken
+    shouldFetchShowData ? { id: showId, params: { 0: '-ordinal', 1: '1' }  } : skipToken
   );
 
   const seasonPage = initialSeasonsResponse?.pagination?.count
@@ -67,7 +67,7 @@ const MediaPlayer = () => {
     data: seasonsResponse,
     isLoading: isSeasonsLoading
   } = useGetShowSeasonsQuery(
-    shouldFetchShowData ? { id: showId, params: { page: seasonPage } } : skipToken
+    shouldFetchShowData ? { id: showId, params: { [0]: seasonPage.toString() } } : skipToken
   );
 
   const seasons = seasonsResponse?.items ?? [];

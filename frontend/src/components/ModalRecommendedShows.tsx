@@ -17,7 +17,7 @@ const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onS
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const { data: genreShowsResponse, isLoading, error } = useGetShowsByGenreQuery(
-    show ? { genreSlug: show.attributes.genre.slug } : skipToken
+    (show?.attributes?.genre?.slug) ? { genreSlug: show.attributes.genre.slug } : skipToken
   );
 
   const recommendedShows = genreShowsResponse?.filter(
