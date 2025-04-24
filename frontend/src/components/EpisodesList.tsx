@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SeasonSelector from './SeasonSelector';
 import Episode from './Episode';
-import {
-  Container, EpisodesContainer, EpisodeSpacer, LoadingText, ErrorText, NoEpisodesText
+import { Container, EpisodesContainer, EpisodeSpacer, LoadingText, ErrorText, NoEpisodesText
 } from '../styled/EpisodesList.styled';
 import { useGetSeasonEpisodesQuery } from '../redux/rtkQuery/pbsWiApi';
 import { Season } from '../types/Season';
@@ -65,7 +64,6 @@ export const EpisodesList = ({ selectedSeason, setSelectedSeason, seasons, seaso
 
   return (
     <Container>
-      {/* season selector */}
       <SeasonSelector seasonsCount={seasonsCount} selectedSeason={selectedSeason} onSeasonChange={handleSeasonChange} />
 
       {episodes && episodes.length > 0 ? (
@@ -78,7 +76,6 @@ export const EpisodesList = ({ selectedSeason, setSelectedSeason, seasons, seaso
           <EpisodesContainer>
             {episodes.map((episode, index) => (
               <React.Fragment key={episode.id}>
-                {/* episode component */}
                 <Episode
                   episode={episode}
                   selectedSeason={selectedSeason}
@@ -86,7 +83,6 @@ export const EpisodesList = ({ selectedSeason, setSelectedSeason, seasons, seaso
                   isActive={selectedEpisodeId ? episode.id === selectedEpisodeId : false}
                 />
 
-                {/* spacing between episodes */}
                 {index < episodes.length - 1 && <EpisodeSpacer />}
               </React.Fragment>
             ))}
