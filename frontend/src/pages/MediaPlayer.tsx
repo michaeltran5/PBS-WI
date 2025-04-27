@@ -18,13 +18,13 @@ const MediaPlayer = () => {
   const { showId } = useParams<{ showId: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  
+
   // Get episodeId from search params or assetId from query params
   const initialEpisodeId = searchParams.get('episodeId') || undefined;
   const assetId = searchParams.get('assetId') || new URLSearchParams(location.search).get('assetId') || undefined;
-  
+
   console.log('MediaPlayer mounted with:', { showId, assetId, initialEpisodeId, search: location.search });
-  
+
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | undefined>(initialEpisodeId);
   const [activeTab, setActiveTab] = useState<string>('about');
@@ -56,7 +56,7 @@ const MediaPlayer = () => {
     data: initialSeasonsResponse,
     isLoading: isInitialLoading
   } = useGetShowSeasonsQuery(
-    shouldFetchShowData ? { id: showId, params: { 0: '-ordinal', 1: '1' }  } : skipToken
+    shouldFetchShowData ? { id: showId, params: { 0: '-ordinal', 1: '1' } } : skipToken
   );
 
   const seasonPage = initialSeasonsResponse?.pagination?.count
@@ -77,7 +77,7 @@ const MediaPlayer = () => {
     useGetShowsByGenreQuery(showData?.attributes?.genre?.slug ? { genreSlug: showData.attributes.genre.slug } : skipToken);
 
   // Filter out the current show from recommendations
-  const filteredRecommendations = genreShowsResponse 
+  const filteredRecommendations = genreShowsResponse
     ? genreShowsResponse.filter(show => show.id !== showId)
     : [];
 
@@ -135,9 +135,9 @@ const MediaPlayer = () => {
   return (
     <Container>
       <Content>
-        <VideoPlayer 
-          episodeId={selectedEpisodeId} 
-          fullWidth={true} 
+        <VideoPlayer
+          episodeId={selectedEpisodeId}
+          fullWidth={true}
         />
 
         <TabContent ref={contentRef}>
@@ -173,7 +173,10 @@ const MediaPlayer = () => {
               )}
 
               {filteredRecommendations.length > 0 && (
-                <RecommendedShows shows={filteredRecommendations} />
+                <RecommendedShows
+                  shows={filteredRecommendations}
+                  currentShowId={showId}
+                />
               )}
             </RecommendationsContainer>
           </TabPanel>
