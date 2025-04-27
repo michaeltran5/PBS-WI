@@ -2,9 +2,10 @@ import { useGetTopPicksQuery } from '../redux/rtkQuery/personalizeApi';
 import { Container, LoadingContainer, LoadingText } from '../styled/MediaPlayer.styled';
 import { ErrorText } from '../styled/EpisodeDetails.styled';
 import { useAuth } from '../components/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPreferredImage } from "../utils/images";
+import ShowModal from "../components/ShowModal";
 import DefaultImage from '../assets/default-image.png';
 import { Cover, Hover } from "../styled/MediaCard.styled";
 import 'react-multi-carousel/lib/styles.css';
@@ -12,29 +13,86 @@ import { Container as RowContainer, Title } from "../styled/MediaRow.styled";
 import Carousel from "react-multi-carousel";
 import styled from "styled-components";
 
+// Specific episode ID to exclude
+const EXCLUDED_EPISODE_ID = '734d997b-8681-4f1c-9716-a7a7716535fb';
+
 // Specialized card component for top picks
-const TopPicksCard = ({ show }) => {
+const TopPicksCard = ({ show, index }) => {
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedShow, setSelectedShow] = useState(null);
   
   // Safety check
   if (!show || typeof show !== 'object') {
     return null;
   }
   
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('Clicked on top picks item:', show);
     
-    // Determine the correct navigation path
-    if ('assetId' in show && show.assetId) {
-      // For PBS assets, navigate to watch page with assetId as a param
-      console.log(`Top picks: Navigating to watch with assetId=${show.assetId}`);
-      navigate(`/watch?assetId=${show.assetId}`);
+    // For PBS assets with parent_tree, prepare show data for the modal
+    if (show.attributes?.parent_tree?.id) {
+      // Extract show ID and episode ID
+      const episodeId = show.attributes.parent_tree.id;
+      const showId = show.attributes.parent_tree?.attributes?.season?.attributes?.show?.id;
+      
+      if (showId) {
+        // Get the parent show name if available
+        const showTitle = show.attributes.parent_tree?.attributes?.season?.attributes?.show?.attributes?.title || show.attributes.title;
+        
+        // Create a show object that will work with the existing ShowModal component
+        const showObj = {
+          id: showId,
+          attributes: {
+            title: showTitle,
+            description_long: show.attributes.description_long || show.attributes.description_short,
+            images: show.attributes.images,
+            genre: show.attributes.genre
+          }
+        };
+        
+        // Set as selected show for the modal
+        setSelectedShow(showObj);
+        setShowModal(true);
+      } else {
+        // If we have an episode ID but no show ID, just use direct navigation
+        navigate(`/watch?episodeId=${episodeId}`);
+      }
     } else {
-      // For regular shows, use the standard navigation
-      const id = show.showId || show.id;
-      console.log(`Top picks: Navigating to show id=${id}`);
-      navigate(`/watch/${id}`);
+      // Regular show or non-episode asset, show modal with current show
+      setSelectedShow(show);
+      setShowModal(true);
     }
+  };
+  
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedShow(null);
+  };
+  
+  const handleWatchShow = (showId) => {
+    handleCloseModal();
+    
+    // If this is from a PBS asset with parent_tree, include episode ID
+    const episodeId = show.attributes?.parent_tree?.id;
+    const queryParam = episodeId ? `?episodeId=${episodeId}` : '';
+    
+    // Delay navigation to avoid issues during modal closing
+    setTimeout(() => {
+      navigate(`/watch/${showId}${queryParam}`);
+    }, 100);
+  };
+  
+  const handleEpisodeSelect = (showId, episodeId) => {
+    handleCloseModal();
+    
+    // Delay navigation to avoid issues during modal closing
+    setTimeout(() => {
+      navigate(`/watch/${showId}?episodeId=${episodeId}`);
+    }, 100);
   };
   
   // Safe access to attributes
@@ -49,12 +107,24 @@ const TopPicksCard = ({ show }) => {
   const title = attributes.title || "Untitled";
   
   return (
-    <Hover onClick={handleClick}>
-      <Cover
-        src={imageUrl}
-        alt={title}
-      />
-    </Hover>
+    <>
+      <Hover onClick={handleClick}>
+        <Cover
+          src={imageUrl}
+          alt={title}
+        />
+      </Hover>
+      
+      {showModal && selectedShow && (
+        <ShowModal
+          showData={selectedShow}
+          show={showModal}
+          onHide={handleCloseModal}
+          onWatch={handleWatchShow}
+          onEpisodeSelect={handleEpisodeSelect}
+        />
+      )}
+    </>
   );
 };
 
@@ -101,18 +171,41 @@ export const TopPicksCarousel = () => {
     limit: 25
   });
 
-  // Log the data for debugging
+  // Filter out shows with the excluded episode ID in their parent_tree
+  const filteredShows = topPicksShows?.filter(show => {
+    // Skip shows with the excluded episode ID in parent_tree
+    const episodeId = show?.attributes?.parent_tree?.id;
+    if (episodeId === EXCLUDED_EPISODE_ID) {
+      return false;
+    }
+    
+    // Also filter out any shows without required data
+    if (!show || !show.attributes) {
+      return false;
+    }
+    
+    return true;
+  }) || [];
+
+  // Log the filtered data
   useEffect(() => {
     if (topPicksShows) {
-      console.log(`TopPicksCarousel: Received ${topPicksShows.length} shows`);
+      const originalCount = topPicksShows.length;
+      const filteredCount = filteredShows.length;
       
-      // Check if any are PBS assets
-      const pbsAssets = topPicksShows.filter(show => 'assetId' in show);
-      if (pbsAssets.length > 0) {
-        console.log(`TopPicksCarousel: ${pbsAssets.length} shows are PBS assets`);
+      console.log(`TopPicksCarousel: Filtered ${originalCount} shows down to ${filteredCount} shows`);
+      console.log(`Excluded episode ID: ${EXCLUDED_EPISODE_ID}`);
+      
+      // Check for the problematic episode
+      const foundExcluded = topPicksShows.some(show => 
+        show?.attributes?.parent_tree?.id === EXCLUDED_EPISODE_ID
+      );
+      
+      if (foundExcluded) {
+        console.log(`Found and removed show with episode ID ${EXCLUDED_EPISODE_ID} in parent_tree`);
       }
     }
-  }, [topPicksShows]);
+  }, [topPicksShows, filteredShows]);
 
   if (isLoading) {
     return (
@@ -133,8 +226,8 @@ export const TopPicksCarousel = () => {
     );
   }
 
-  if (!topPicksShows || topPicksShows.length === 0) {
-    console.log('No personalized recommendations available');
+  if (!filteredShows || filteredShows.length === 0) {
+    console.log('No personalized recommendations available after filtering');
     return null;
   }
 
@@ -181,8 +274,8 @@ export const TopPicksCarousel = () => {
           responsive={responsive}
           itemClass="carouselItem"
         >
-          {topPicksShows.map((show, index) => (
-            <TopPicksCard key={`toppick-${show.id}-${index}`} show={show} />
+          {filteredShows.map((show, index) => (
+            <TopPicksCard key={`toppick-${show.id}-${index}`} show={show} index={index} />
           ))}
         </StyledCarousel>
       </CarouselContainer>
