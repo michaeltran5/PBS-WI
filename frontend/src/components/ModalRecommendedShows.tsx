@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Show } from '../types/Show';
 import { useGetShowsByGenreQuery } from '../redux/rtkQuery/customApi';
+import { useGetBecauseYouWatchedQuery } from '../redux/rtkQuery/personalizeApi';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { getPreferredImage } from '../utils/images';
 import ShowModal from './ShowModal';
 import { Container, LoadingText, NoShowsText, ShowsGrid, ShowCard, ImageContainer, ShowImage, ShowTitle
 } from '../styled/ModalRecommendedShows.styled';
+import { useAuth } from './AuthContext';
 
 interface ModalRecommendedShowsProps {
   show: Show;
@@ -15,14 +17,33 @@ interface ModalRecommendedShowsProps {
 const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onShowSelect }) => {
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-
-  const { data: genreShowsResponse, isLoading, error } = useGetShowsByGenreQuery(
-    (show?.attributes?.genre?.slug) ? { genreSlug: show.attributes.genre.slug } : skipToken
+  const { isAuthenticated, user } = useAuth();
+  
+  // First try to get personalized "because you watched" recommendations if the user is authenticated
+  const { data: becauseYouWatchedShows, isLoading: isBecauseYouWatchedLoading, error: becauseYouWatchedError } = 
+    useGetBecauseYouWatchedQuery(
+      (isAuthenticated && user?.uid && show?.id) 
+        ? { id: show.id, isShowId: true, userId: user.uid, limit: 10 } 
+        : skipToken
+    );
+  
+  // Fallback to genre-based recommendations if personalized recommendations fail or user is not authenticated
+  const { data: genreShowsResponse, isLoading: isGenreLoading, error: genreError } = useGetShowsByGenreQuery(
+    (!becauseYouWatchedShows || becauseYouWatchedShows.length === 0) && show?.attributes?.genre?.slug 
+      ? { genreSlug: show.attributes.genre.slug } 
+      : skipToken
   );
 
-  const recommendedShows = genreShowsResponse?.filter(
-    recommendedShow => recommendedShow.id !== show.id
-  ) || [];
+  // Use personalized recommendations if available, otherwise use genre-based recommendations
+  const recommendedShows = becauseYouWatchedShows && becauseYouWatchedShows.length > 0
+    ? becauseYouWatchedShows.filter(recommendedShow => recommendedShow.id !== show.id)
+    : genreShowsResponse?.filter(recommendedShow => recommendedShow.id !== show.id) || [];
+  
+  // Loading state
+  const isLoading = isBecauseYouWatchedLoading || isGenreLoading;
+  
+  // Error state
+  const error = becauseYouWatchedError && genreError;
 
   const handleShowClick = (selectedShow: Show) => {
     if (onShowSelect) {
@@ -61,6 +82,7 @@ const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onS
                 alt={recommendedShow.attributes.title}
               />
             </ImageContainer>
+            <ShowTitle>{recommendedShow.attributes.title}</ShowTitle>
           </ShowCard>
         ))}
       </ShowsGrid>
