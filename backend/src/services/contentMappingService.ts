@@ -1,4 +1,4 @@
-// Update backend/src/services/contentMappingService.ts
+// backend/src/services/contentMappingService.ts
 
 import { getItem } from './pbsService';
 import { PBS_TYPES } from '../constants/pbsTypes';
@@ -48,9 +48,11 @@ export const mapPersonalizeItemsToContent = async (
                       title: "PBS Content",
                       slug: "pbs-content"
                     },
-                    images: response.data.attributes.images
+                    images: response.data.attributes.images,
+                    // Include parent_tree for episode ID extraction in TopPicksCard
+                    parent_tree: response.data.attributes.parent_tree
                   },
-                  // Store the original asset ID so we can use it for playback
+                  // Store the original asset ID so we can use it for playback if needed
                   assetId: response.data.id
                 };
               }
@@ -67,10 +69,15 @@ export const mapPersonalizeItemsToContent = async (
               
               console.log(`Successfully fetched show ${showId} for asset ${id}`);
               
-              // Return the show, but keep the asset ID for reference
+              // Return the show, but include parent_tree from original asset for episode ID
               return {
                 ...showResponse.data,
-                // Store the original asset ID so we can use it for playback
+                attributes: {
+                  ...showResponse.data.attributes,
+                  // Include parent_tree from the asset for episode ID extraction
+                  parent_tree: response.data.attributes.parent_tree
+                },
+                // Store the original asset ID so we can use it for playback if needed
                 assetId: response.data.id
               };
             } catch (error) {
