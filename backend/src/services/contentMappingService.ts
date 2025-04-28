@@ -49,6 +49,8 @@ export const mapPersonalizeItemsToContent = async (
                       slug: "pbs-content"
                     },
                     images: response.data.attributes.images,
+                    // Include asset ID as featured_preview for proper preview functionality
+                    featured_preview: response.data.id,
                     // Include parent_tree for episode ID extraction in TopPicksCard
                     parent_tree: response.data.attributes.parent_tree
                   },
@@ -74,6 +76,8 @@ export const mapPersonalizeItemsToContent = async (
                 ...showResponse.data,
                 attributes: {
                   ...showResponse.data.attributes,
+                  // Use asset ID as featured_preview if the show doesn't have one
+                  featured_preview: showResponse.data.attributes.featured_preview || response.data.id,
                   // Include parent_tree from the asset for episode ID extraction
                   parent_tree: response.data.attributes.parent_tree
                 },
