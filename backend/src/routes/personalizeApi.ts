@@ -31,6 +31,7 @@ router.get('/top-picks/:userId', async (req: Request, res: Response, next: NextF
     }
 });
 
+// Update the because-you-watched endpoint for deduplication
 router.get('/because-you-watched/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params; // This could be either a showId or an assetId
@@ -79,9 +80,17 @@ router.get('/because-you-watched/:id', async (req: Request, res: Response, next:
         // Map item IDs to content objects
         const contentItems = await mapPersonalizeItemsToContent(itemIds);
         console.log(`Successfully mapped ${contentItems.length} content items`);
+        
+        // Deduplicate the content items based on show ID
+        const uniqueContentItems = deduplicate(contentItems);
+        console.log(`After deduplication: ${uniqueContentItems.length} unique content items`);
+
+        // Remove the source item from recommendations if it's in there
+        const filteredItems = uniqueContentItems.filter(item => item.id !== id);
+        console.log(`After filtering out source item: ${filteredItems.length} recommended items`);
 
         res.json({
-            becauseYouWatched: contentItems,
+            becauseYouWatched: filteredItems,
             sourceItem: id
         });
     } catch (error) {
@@ -89,6 +98,25 @@ router.get('/because-you-watched/:id', async (req: Request, res: Response, next:
         next(error);
     }
 });
+
+// Utility function to deduplicate content items by show ID
+function deduplicate(items: any[]): any[] {
+    const uniqueMap = new Map();
+    
+    items.forEach(item => {
+        // Get a unique identifier for the show
+        const showId = item.id || 
+            (item.attributes?.parent_tree?.attributes?.season?.attributes?.show?.id) || 
+            (item.showId);
+        
+        // If we don't have this show yet, add it
+        if (showId && !uniqueMap.has(showId)) {
+            uniqueMap.set(showId, item);
+        }
+    });
+    
+    return Array.from(uniqueMap.values());
+}
 
 router.get('/more-like/:itemId', async (req: Request, res: Response, next: NextFunction) => {
     try {
