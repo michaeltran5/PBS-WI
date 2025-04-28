@@ -8,6 +8,7 @@ import ShowModal from './ShowModal';
 import { useAuth } from './AuthContext';
 import { skipToken } from '@reduxjs/toolkit/query';
 
+
 type Props = {
   shows: Show[];
   currentShowId?: string;

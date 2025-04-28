@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFirstEpisodeAssetId = exports.findShowByAnyId = exports.getAssetByCID = exports.getAssets = exports.getShowByProgramId = exports.getAssetByTPMediaId = exports.getChangelog = exports.alterPbsImage = exports.extractImage = exports.getImages = exports.getChildItems = exports.search = exports.getList = exports.getItem = exports.getRequest = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const utc_1 = __importDefault(require("dayjs/plugin/utc"));
+const pbsTypes_1 = require("../constants/pbsTypes");
 const client_1 = require("../client");
 dayjs_1.default.extend(utc_1.default);
 const getRequest = (endpoint_1, ...args_1) => __awaiter(void 0, [endpoint_1, ...args_1], void 0, function* (endpoint, params = {}) {
@@ -160,7 +161,7 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
     try {
         console.log(`Getting first episode asset for show ${showId}`);
         // Step 1: Get the first season
-        const seasonsResponse = yield (0, exports.getChildItems)(showId, PBS_PARENT_TYPES.SHOW, PBS_CHILD_TYPES.SEASON, {
+        const seasonsResponse = yield (0, exports.getChildItems)(showId, pbsTypes_1.PBS_PARENT_TYPES.SHOW, pbsTypes_1.PBS_CHILD_TYPES.SEASON, {
             sort: 'ordinal',
             'fetch-related': true
         });
@@ -175,8 +176,8 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
             const firstEpisodeId = firstSeason.attributes.episodes[0].id;
             console.log(`Found first episode ${firstEpisodeId} for season ${firstSeason.id}`);
             // Step 3: Get the episode's assets
-            const assetsResponse = yield (0, exports.getChildItems)(firstEpisodeId, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
-            const fullLengthAsset = (_c = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _c === void 0 ? void 0 : _c.find(asset => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
+            const assetsResponse = yield (0, exports.getChildItems)(firstEpisodeId, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET);
+            const fullLengthAsset = (_c = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _c === void 0 ? void 0 : _c.find((asset) => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
             if (fullLengthAsset) {
                 console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisodeId}`);
                 return fullLengthAsset.id;
@@ -189,7 +190,7 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
         }
         else {
             // Step 2: Get the first episode
-            const episodesResponse = yield (0, exports.getChildItems)(firstSeason.id, PBS_PARENT_TYPES.SEASON, PBS_CHILD_TYPES.EPISODE, {
+            const episodesResponse = yield (0, exports.getChildItems)(firstSeason.id, pbsTypes_1.PBS_PARENT_TYPES.SEASON, pbsTypes_1.PBS_CHILD_TYPES.EPISODE, {
                 sort: 'ordinal',
                 'fetch-related': true
             });
@@ -200,8 +201,8 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
             }
             console.log(`Found first episode ${firstEpisode.id} for season ${firstSeason.id}`);
             // Step 3: Get the episode's assets
-            const assetsResponse = yield (0, exports.getChildItems)(firstEpisode.id, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
-            const fullLengthAsset = (_f = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _f === void 0 ? void 0 : _f.find(asset => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
+            const assetsResponse = yield (0, exports.getChildItems)(firstEpisode.id, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET);
+            const fullLengthAsset = (_f = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _f === void 0 ? void 0 : _f.find((asset) => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
             if (fullLengthAsset) {
                 console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisode.id}`);
                 return fullLengthAsset.id;
