@@ -78,8 +78,6 @@ export const getAssets = async (parentId: string, parentType: PBSParentType, ass
   );
 };
 
-// Add this function to pbsService.js
-
 export const getAssetByCID = async (cid: string) => {
   const url = `https://media.services.pbs.org/api/v1/assets/${cid}`;
   const headers = {
@@ -145,6 +143,11 @@ export const findShowByAnyId = async (id: string): Promise<any> => {
   }
 };
 
+/**
+ * Gets the first episode asset ID for a show
+ * This will be used to get recommendations for a show
+ */
+
 export const getFirstEpisodeAssetId = async (showId: string): Promise<string | null> => {
   try {
     console.log(`Getting first episode asset for show ${showId}`);
@@ -171,7 +174,7 @@ export const getFirstEpisodeAssetId = async (showId: string): Promise<string | n
       // Step 3: Get the episode's assets
       const assetsResponse = await getChildItems(firstEpisodeId, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
       
-      const fullLengthAsset = assetsResponse?.data?.find((asset: any) => 
+      const fullLengthAsset = assetsResponse?.data?.find(asset => 
         asset.attributes?.object_type === 'full_length'
       );
       
@@ -203,7 +206,8 @@ export const getFirstEpisodeAssetId = async (showId: string): Promise<string | n
       // Step 3: Get the episode's assets
       const assetsResponse = await getChildItems(firstEpisode.id, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
       
-      const fullLengthAsset = assetsResponse?.data?.find((asset: any) => 
+      const fullLengthAsset = assetsResponse?.data?.find(asset => 
+
         asset.attributes?.object_type === 'full_length'
       );
       
@@ -226,3 +230,4 @@ export const getFirstEpisodeAssetId = async (showId: string): Promise<string | n
     return null;
   }
 };
+

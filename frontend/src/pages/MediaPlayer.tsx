@@ -116,7 +116,7 @@ const MediaPlayer = () => {
     return (
       <Container>
         <Content>
-          <VideoPlayer episodeId={assetId} fullWidth={true} />
+          <VideoPlayer assetId={assetId} fullWidth={true} />
         </Content>
       </Container>
     );
@@ -172,10 +172,13 @@ const MediaPlayer = () => {
                 <NoRecommendationsText>No recommendations available</NoRecommendationsText>
               )}
 
-              {filteredRecommendations.length > 0 && (
-                <RecommendedShows
-                  shows={filteredRecommendations}
-                  currentShowId={showId}
+
+              {!recommendationsLoading && filteredRecommendations.length > 0 && (
+                <RecommendedShows 
+                  shows={filteredRecommendations} 
+                  currentShowId={showId} 
+
+
                 />
               )}
             </RecommendationsContainer>

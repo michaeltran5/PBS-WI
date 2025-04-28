@@ -6,6 +6,8 @@ import { Container, ShowsContainer, ShowCard, ThumbnailContainer, Thumbnail, Tit
 import { getPreferredImage } from '../utils/images';
 import ShowModal from './ShowModal';
 import { useAuth } from './AuthContext';
+import { skipToken } from '@reduxjs/toolkit/query';
+
 
 type Props = {
   shows: Show[];

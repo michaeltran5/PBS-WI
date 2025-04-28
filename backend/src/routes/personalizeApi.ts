@@ -1,5 +1,3 @@
-// Update backend/src/routes/personalizeApi.ts
-
 import express, { Request, Response, NextFunction } from 'express';
 import { getMoreLike, getRelatedItems, getUserRecommendations } from '../services/personalizeService';
 import { mapPersonalizeItemsToContent } from '../services/contentMappingService';

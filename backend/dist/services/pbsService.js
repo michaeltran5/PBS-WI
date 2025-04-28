@@ -87,7 +87,6 @@ const getAssets = (parentId_1, parentType_1, ...args_1) => __awaiter(void 0, [pa
         (window === 'all' || window === asset.attributes.mvod_window));
 });
 exports.getAssets = getAssets;
-// Add this function to pbsService.js
 const getAssetByCID = (cid) => __awaiter(void 0, void 0, void 0, function* () {
     const url = `https://media.services.pbs.org/api/v1/assets/${cid}`;
     const headers = {
@@ -153,6 +152,10 @@ const findShowByAnyId = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.findShowByAnyId = findShowByAnyId;
+/**
+ * Gets the first episode asset ID for a show
+ * This will be used to get recommendations for a show
+ */
 const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g;
     try {

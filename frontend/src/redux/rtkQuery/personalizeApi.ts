@@ -1,5 +1,3 @@
-// Update frontend/src/redux/rtkQuery/personalizeApi.ts
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Show } from '../../types/Show';
 
@@ -18,6 +16,7 @@ export const personalizeApi = createApi({
             }),
             transformResponse: (response: any) => response.topPicks || [],
         }),
+
         getBecauseYouWatched: builder.query<Show[], { 
             id: string; 
             isShowId?: boolean;
