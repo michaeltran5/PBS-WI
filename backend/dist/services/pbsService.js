@@ -177,7 +177,7 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
             console.log(`Found first episode ${firstEpisodeId} for season ${firstSeason.id}`);
             // Step 3: Get the episode's assets
             const assetsResponse = yield (0, exports.getChildItems)(firstEpisodeId, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET);
-            const fullLengthAsset = (_c = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _c === void 0 ? void 0 : _c.find((asset) => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
+            const fullLengthAsset = (_c = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _c === void 0 ? void 0 : _c.find(asset => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
             if (fullLengthAsset) {
                 console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisodeId}`);
                 return fullLengthAsset.id;
@@ -202,7 +202,7 @@ const getFirstEpisodeAssetId = (showId) => __awaiter(void 0, void 0, void 0, fun
             console.log(`Found first episode ${firstEpisode.id} for season ${firstSeason.id}`);
             // Step 3: Get the episode's assets
             const assetsResponse = yield (0, exports.getChildItems)(firstEpisode.id, pbsTypes_1.PBS_PARENT_TYPES.EPISODE, pbsTypes_1.PBS_CHILD_TYPES.ASSET);
-            const fullLengthAsset = (_f = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _f === void 0 ? void 0 : _f.find((asset) => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
+            const fullLengthAsset = (_f = assetsResponse === null || assetsResponse === void 0 ? void 0 : assetsResponse.data) === null || _f === void 0 ? void 0 : _f.find(asset => { var _a; return ((_a = asset.attributes) === null || _a === void 0 ? void 0 : _a.object_type) === 'full_length'; });
             if (fullLengthAsset) {
                 console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisode.id}`);
                 return fullLengthAsset.id;

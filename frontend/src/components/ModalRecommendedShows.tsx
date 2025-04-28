@@ -5,7 +5,7 @@ import { useGetBecauseYouWatchedQuery } from '../redux/rtkQuery/personalizeApi';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { getPreferredImage } from '../utils/images';
 import ShowModal from './ShowModal';
-import { Container, LoadingText, NoShowsText, ShowsGrid, ShowCard, ImageContainer, ShowImage, ShowTitle
+import { Container, LoadingText, NoShowsText, ShowsGrid, ShowCard, ImageContainer, ShowImage
 } from '../styled/ModalRecommendedShows.styled';
 import { useAuth } from './AuthContext';
 
@@ -82,7 +82,6 @@ const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onS
                 alt={recommendedShow.attributes.title}
               />
             </ImageContainer>
-            <ShowTitle>{recommendedShow.attributes.title}</ShowTitle>
           </ShowCard>
         ))}
       </ShowsGrid>

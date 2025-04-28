@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetBecauseYouWatchedQuery } from '../redux/rtkQuery/personalizeApi';
 import { Show } from '../types/Show';
-import { Container, ShowsContainer, ShowCard, ThumbnailContainer, Thumbnail, Title, Description } from '../styled/RecommendedShows.styled';
+import { Container, ShowsContainer, ShowCard, ThumbnailContainer, Thumbnail } from '../styled/RecommendedShows.styled';
 import { getPreferredImage } from '../utils/images';
 import ShowModal from './ShowModal';
 import { useAuth } from './AuthContext';
 import { skipToken } from '@reduxjs/toolkit/query';
-
 
 type Props = {
   shows: Show[];
@@ -74,8 +73,6 @@ const RecommendedShows: React.FC<Props> = ({ shows, currentShowId }: Props) => {
                 alt={show.attributes.title}
               />
             </ThumbnailContainer>
-            <Title>{show.attributes.title}</Title>
-            <Description>{show.attributes.description_short}</Description>
           </ShowCard>
         ))}
       </ShowsContainer>
