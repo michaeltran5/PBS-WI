@@ -74,3 +74,17 @@ export const Duration = styled.div`
   font-size: 15px;
   margin-top: auto;
 `;
+
+export const PassportOverlay = styled.div`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  width: 30px;
+  height: 30px;
+`;
+
+export const PassportImage = styled.img`
+  width: 100%;
+  height: 100%;
+`;
