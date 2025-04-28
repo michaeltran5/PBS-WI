@@ -39,31 +39,38 @@ const TopPicksCard = ({ show, index }) => {
       const episodeId = show.attributes.parent_tree.id;
       const showId = show.attributes.parent_tree?.attributes?.season?.attributes?.show?.id;
       
-      if (showId) {
-        // Get the parent show name if available
-        const showTitle = show.attributes.parent_tree?.attributes?.season?.attributes?.show?.attributes?.title || show.attributes.title;
-        
-        // Create a show object that will work with the existing ShowModal component
-        const showObj = {
-          id: showId,
-          attributes: {
-            title: showTitle,
-            description_long: show.attributes.description_long || show.attributes.description_short,
-            images: show.attributes.images,
-            genre: show.attributes.genre
-          }
-        };
-        
-        // Set as selected show for the modal
-        setSelectedShow(showObj);
-        setShowModal(true);
-      } else {
-        // If we have an episode ID but no show ID, just use direct navigation
-        navigate(`/watch?episodeId=${episodeId}`);
-      }
+      // Create a show object that will work with the existing ShowModal component
+      const showObj = {
+        // Use the show ID if available, otherwise use the item's own ID
+        id: showId || show.id,
+        attributes: {
+          // Use appropriate title based on what's available
+          title: show.attributes.parent_tree?.attributes?.season?.attributes?.show?.attributes?.title || show.attributes.title,
+          description_long: show.attributes.description_long || show.attributes.description_short,
+          images: show.attributes.images,
+          genre: show.attributes.genre,
+          // Add featured_preview from the original show or use the asset ID
+          featured_preview: show.attributes.featured_preview || show.id,
+          // Keep the episode ID for direct playback if needed
+          parent_tree: show.attributes.parent_tree
+        }
+      };
+      
+      // Always show the modal regardless of content type
+      setSelectedShow(showObj);
+      setShowModal(true);
     } else {
       // Regular show or non-episode asset, show modal with current show
-      setSelectedShow(show);
+      // Make sure preview info is preserved
+      const showData = {
+        ...show,
+        attributes: {
+          ...show.attributes,
+          featured_preview: show.attributes.featured_preview || show.id
+        }
+      };
+      // Always show the modal
+      setSelectedShow(showData);
       setShowModal(true);
     }
   };
@@ -235,6 +242,14 @@ export const TopPicksCarousel = () => {
       
       if (foundExcluded) {
         console.log(`Found and removed show with episode ID ${EXCLUDED_EPISODE_ID} in parent_tree`);
+      }
+
+      // Check whether featured previews are available
+      const hasPreview = filteredShows.some(show => !!show.attributes?.featured_preview);
+      console.log(`Shows with featured previews: ${hasPreview ? 'YES' : 'NO'}`);
+      if (hasPreview) {
+        const previewCount = filteredShows.filter(show => !!show.attributes?.featured_preview).length;
+        console.log(`${previewCount} out of ${filteredShows.length} shows have featured previews`);
       }
     }
   }, [topPicksShows, filteredShows]);

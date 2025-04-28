@@ -77,7 +77,12 @@ const ShowModal: React.FC<ShowModalProps> = ({ show, onHide, showData, onWatch, 
   };
   
   const handleTogglePreview = () => {
-    setShowPreview(prev => !prev);
+    // Only toggle preview if there's a featured_preview available
+    if (currentShowData.attributes?.featured_preview) {
+      setShowPreview(prev => !prev);
+    } else {
+      console.log('No preview available for this show');
+    }
   };
   
   const handleWatchShow = useCallback(() => {
