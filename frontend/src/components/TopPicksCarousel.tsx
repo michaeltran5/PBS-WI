@@ -23,34 +23,34 @@ const TopPicksCard = ({ show, index }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
-  
+
   // Get the real show ID
   const showId = show.attributes?.parent_tree?.attributes?.season?.attributes?.show?.id || show.id;
-  
+
   // Fetch the actual show data to get the featured preview
   const { data: showData } = useGetShowByIdQuery(
     showId ? { id: showId } : skipToken
   );
-  
+
   // Safety check
   if (!show || typeof show !== 'object') {
     return null;
   }
-  
+
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Get the featured preview from the show data if available
     const featuredPreview = showData?.attributes?.featured_preview;
     console.log('Featured preview from show data:', featuredPreview);
-    
+
     // For PBS assets with parent_tree, prepare show data for the modal
     if (show.attributes?.parent_tree?.id) {
       // Extract show ID and episode ID
       const episodeId = show.attributes.parent_tree.id;
       const parentShowId = show.attributes.parent_tree?.attributes?.season?.attributes?.show?.id;
-      
+
       // Create a show object that will work with the existing ShowModal component
       const showObj = {
         // Use the show ID if available, otherwise use the item's own ID
@@ -67,14 +67,14 @@ const TopPicksCard = ({ show, index }) => {
           parent_tree: show.attributes.parent_tree
         }
       };
-      
+
       // Always show the modal regardless of content type
       setSelectedShow(showObj);
       setShowModal(true);
     } else {
       // Regular show or non-episode asset, use show data if available
       const showToUse = showData || show;
-      
+
       // Create a show object with the correct featured_preview
       const showObj = {
         ...showToUse,
@@ -84,7 +84,7 @@ const TopPicksCard = ({ show, index }) => {
           // and only set it if we have the proper one from showData
         }
       };
-      
+
       // Only add featured_preview if it exists in the real show data
       if (featuredPreview) {
         showObj.attributes.featured_preview = featuredPreview;
@@ -93,51 +93,51 @@ const TopPicksCard = ({ show, index }) => {
         // to ensure the preview button doesn't show or doesn't do anything
         delete showObj.attributes.featured_preview;
       }
-      
+
       // Always show the modal
       setSelectedShow(showObj);
       setShowModal(true);
     }
   };
-  
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedShow(null);
   };
-  
+
   const handleWatchShow = (showId) => {
     handleCloseModal();
-    
+
     // If this is from a PBS asset with parent_tree, include episode ID
     const episodeId = show.attributes?.parent_tree?.id;
     const queryParam = episodeId ? `?episodeId=${episodeId}` : '';
-    
+
     // Delay navigation to avoid issues during modal closing
     setTimeout(() => {
       navigate(`/watch/${showId}${queryParam}`);
     }, 100);
   };
-  
+
   const handleEpisodeSelect = (showId, episodeId) => {
     handleCloseModal();
-    
+
     // Delay navigation to avoid issues during modal closing
     setTimeout(() => {
       navigate(`/watch/${showId}?episodeId=${episodeId}`);
     }, 100);
   };
-  
+
   // Safe access to attributes
   const attributes = show.attributes || {};
-  
+
   // Handle case where images might be undefined
-  const imageUrl = attributes.images ? 
-    getPreferredImage(attributes.images) : 
+  const imageUrl = attributes.images ?
+    getPreferredImage(attributes.images) :
     DefaultImage;
 
   // Handle case where title might be undefined
   const title = attributes.title || "Untitled";
-  
+
   return (
     <>
       <Hover onClick={handleClick}>
@@ -146,7 +146,7 @@ const TopPicksCard = ({ show, index }) => {
           alt={title}
         />
       </Hover>
-      
+
       {showModal && selectedShow && (
         <ShowModal
           showData={selectedShow}
@@ -192,13 +192,13 @@ const StyledCarousel = styled(Carousel)`
 
 export const TopPicksCarousel = () => {
   const { isAuthenticated, user } = useAuth();
-  
+
   // If user is not authenticated, don't show the carousel
   if (!isAuthenticated || !user?.uid) {
     return null;
   }
-  
-  const { data: topPicksShows, isLoading, error } = useGetTopPicksQuery({ 
+
+  const { data: topPicksShows, isLoading, error } = useGetTopPicksQuery({
     userId: user.uid,
     limit: 25
   });
@@ -212,30 +212,30 @@ export const TopPicksCarousel = () => {
       if (episodeId === EXCLUDED_EPISODE_ID) {
         return false;
       }
-      
+
       // Also filter out any shows without required data
       if (!show || !show.attributes) {
         return false;
       }
-      
+
       return true;
     }) || [];
-    
+
     // Then deduplicate by show ID
     // We'll use a Map to keep track of shows we've seen
     const uniqueShows = new Map();
-    
+
     // For each show, we'll extract a unique identifier
     initialFiltered.forEach(show => {
       // Get the real show ID (either directly or from parent_tree)
       const showId = show.attributes?.parent_tree?.attributes?.season?.attributes?.show?.id || show.id;
-      
+
       // If we haven't seen this show before, add it to our Map
       if (showId && !uniqueShows.has(showId)) {
         uniqueShows.set(showId, show);
       }
     });
-    
+
     // Convert the Map values back to an array
     return Array.from(uniqueShows.values());
   })();
@@ -249,20 +249,20 @@ export const TopPicksCarousel = () => {
         return episodeId !== EXCLUDED_EPISODE_ID && show && show.attributes;
       }).length;
       const finalCount = filteredShows.length;
-      
+
       console.log(`TopPicksCarousel: Started with ${originalCount} shows`);
       console.log(`After exclusion filtering: ${afterExclusionCount} shows`);
       console.log(`After deduplication: ${finalCount} shows`);
-      
+
       if (afterExclusionCount !== finalCount) {
         console.log(`Removed ${afterExclusionCount - finalCount} duplicate shows`);
       }
-      
+
       // Check for the problematic episode
-      const foundExcluded = topPicksShows.some(show => 
+      const foundExcluded = topPicksShows.some(show =>
         show?.attributes?.parent_tree?.id === EXCLUDED_EPISODE_ID
       );
-      
+
       if (foundExcluded) {
         console.log(`Found and removed show with episode ID ${EXCLUDED_EPISODE_ID} in parent_tree`);
       }

@@ -172,13 +172,11 @@ const MediaPlayer = () => {
                 <NoRecommendationsText>No recommendations available</NoRecommendationsText>
               )}
 
-
               {!recommendationsLoading && filteredRecommendations.length > 0 && (
-                <RecommendedShows 
-                  shows={filteredRecommendations} 
-                  currentShowId={showId} 
-
-
+                <RecommendedShows
+                  shows={filteredRecommendations}
+                  currentShowId={showId}
+                  key={`recommendations-${showId}`}
                 />
               )}
             </RecommendationsContainer>
