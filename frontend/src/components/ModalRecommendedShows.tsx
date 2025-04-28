@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// frontend/src/components/ModalRecommendedShows.tsx
+import React, { useState, useEffect } from 'react';
 import { Show } from '../types/Show';
 import { useGetShowsByGenreQuery } from '../redux/rtkQuery/customApi';
 import { useGetBecauseYouWatchedQuery } from '../redux/rtkQuery/personalizeApi';
@@ -20,12 +21,29 @@ const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onS
   const { isAuthenticated, user } = useAuth();
   
   // First try to get personalized "because you watched" recommendations if the user is authenticated
-  const { data: becauseYouWatchedShows, isLoading: isBecauseYouWatchedLoading, error: becauseYouWatchedError } = 
-    useGetBecauseYouWatchedQuery(
-      (isAuthenticated && user?.uid && show?.id) 
-        ? { id: show.id, isShowId: true, userId: user.uid, limit: 10 } 
-        : skipToken
-    );
+  const { 
+    data: becauseYouWatchedShows, 
+    isLoading: isBecauseYouWatchedLoading, 
+    error: becauseYouWatchedError,
+    refetch 
+  } = useGetBecauseYouWatchedQuery(
+    (isAuthenticated && user?.uid && show?.id) 
+      ? { 
+          id: show.id, 
+          isShowId: true, 
+          userId: user.uid, 
+          limit: 15
+        } 
+      : skipToken
+  );
+  
+  // Force refetch when show changes
+  useEffect(() => {
+    if (show?.id && isAuthenticated && user?.uid) {
+      console.log(`ModalRecommendedShows: Show changed to ${show.id}, forcing refetch`);
+      refetch();
+    }
+  }, [show?.id, isAuthenticated, user?.uid, refetch]);
   
   // Fallback to genre-based recommendations if personalized recommendations fail or user is not authenticated
   const { data: genreShowsResponse, isLoading: isGenreLoading, error: genreError } = useGetShowsByGenreQuery(
@@ -75,7 +93,10 @@ const ModalRecommendedShows: React.FC<ModalRecommendedShowsProps> = ({ show, onS
     <Container>
       <ShowsGrid>
         {recommendedShows.map(recommendedShow => (
-          <ShowCard key={recommendedShow.id} onClick={() => handleShowClick(recommendedShow)}>
+          <ShowCard 
+            key={`modal-${show.id}-rec-${recommendedShow.id}`} 
+            onClick={() => handleShowClick(recommendedShow)}
+          >
             <ImageContainer>
               <ShowImage 
                 src={getPreferredImage(recommendedShow.attributes.images)} 
