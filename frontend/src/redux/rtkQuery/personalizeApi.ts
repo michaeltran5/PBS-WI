@@ -16,8 +16,7 @@ export const personalizeApi = createApi({
             }),
             transformResponse: (response: any) => response.topPicks || [],
         }),
-        
-        // Updated getBecauseYouWatched to handle both showId and assetId
+
         getBecauseYouWatched: builder.query<Show[], { 
             id: string; 
             isShowId?: boolean;

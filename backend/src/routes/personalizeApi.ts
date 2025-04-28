@@ -99,7 +99,6 @@ router.get('/because-you-watched/:id', async (req: Request, res: Response, next:
     }
 });
 
-// Utility function to deduplicate content items by show ID
 function deduplicate(items: any[]): any[] {
     const uniqueMap = new Map();
     

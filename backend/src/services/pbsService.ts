@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { PBSAssetType, PBSChildType, PBSParentType, PBSType, PBSWindowType, PBS_TYPES } from '../constants/pbsTypes';
+import { PBSAssetType, PBSChildType, PBSParentType, PBSType, PBSWindowType, PBS_CHILD_TYPES, PBS_PARENT_TYPES, PBS_TYPES } from '../constants/pbsTypes';
 import { pbsApiClient } from '../client';
 
 dayjs.extend(utc);
@@ -147,6 +147,7 @@ export const findShowByAnyId = async (id: string): Promise<any> => {
  * Gets the first episode asset ID for a show
  * This will be used to get recommendations for a show
  */
+
 export const getFirstEpisodeAssetId = async (showId: string): Promise<string | null> => {
   try {
     console.log(`Getting first episode asset for show ${showId}`);
@@ -206,6 +207,7 @@ export const getFirstEpisodeAssetId = async (showId: string): Promise<string | n
       const assetsResponse = await getChildItems(firstEpisode.id, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
       
       const fullLengthAsset = assetsResponse?.data?.find(asset => 
+
         asset.attributes?.object_type === 'full_length'
       );
       
@@ -228,3 +230,4 @@ export const getFirstEpisodeAssetId = async (showId: string): Promise<string | n
     return null;
   }
 };
+
