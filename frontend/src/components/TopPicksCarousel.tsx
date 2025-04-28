@@ -171,30 +171,62 @@ export const TopPicksCarousel = () => {
     limit: 25
   });
 
-  // Filter out shows with the excluded episode ID in their parent_tree
-  const filteredShows = topPicksShows?.filter(show => {
-    // Skip shows with the excluded episode ID in parent_tree
-    const episodeId = show?.attributes?.parent_tree?.id;
-    if (episodeId === EXCLUDED_EPISODE_ID) {
-      return false;
-    }
+  // Filter and deduplicate shows
+  const filteredShows = (() => {
+    // First apply the existing filters
+    const initialFiltered = topPicksShows?.filter(show => {
+      // Skip shows with the excluded episode ID in parent_tree
+      const episodeId = show?.attributes?.parent_tree?.id;
+      if (episodeId === EXCLUDED_EPISODE_ID) {
+        return false;
+      }
+      
+      // Also filter out any shows without required data
+      if (!show || !show.attributes) {
+        return false;
+      }
+      
+      return true;
+    }) || [];
     
-    // Also filter out any shows without required data
-    if (!show || !show.attributes) {
-      return false;
-    }
+    // Then deduplicate by show ID
+    // We'll use a Map to keep track of shows we've seen
+    const uniqueShows = new Map();
     
-    return true;
-  }) || [];
+    // For each show, we'll extract a unique identifier
+    initialFiltered.forEach(show => {
+      // Get the real show ID (either directly or from parent_tree)
+      const showId = show.id || 
+                   (show.attributes?.parent_tree?.attributes?.season?.attributes?.show?.id) || 
+                   (show.assetId);
+      
+      // If we haven't seen this show before, add it to our Map
+      if (showId && !uniqueShows.has(showId)) {
+        uniqueShows.set(showId, show);
+      }
+    });
+    
+    // Convert the Map values back to an array
+    return Array.from(uniqueShows.values());
+  })();
 
   // Log the filtered data
   useEffect(() => {
     if (topPicksShows) {
       const originalCount = topPicksShows.length;
-      const filteredCount = filteredShows.length;
+      const afterExclusionCount = topPicksShows.filter(show => {
+        const episodeId = show?.attributes?.parent_tree?.id;
+        return episodeId !== EXCLUDED_EPISODE_ID && show && show.attributes;
+      }).length;
+      const finalCount = filteredShows.length;
       
-      console.log(`TopPicksCarousel: Filtered ${originalCount} shows down to ${filteredCount} shows`);
-      console.log(`Excluded episode ID: ${EXCLUDED_EPISODE_ID}`);
+      console.log(`TopPicksCarousel: Started with ${originalCount} shows`);
+      console.log(`After exclusion filtering: ${afterExclusionCount} shows`);
+      console.log(`After deduplication: ${finalCount} shows`);
+      
+      if (afterExclusionCount !== finalCount) {
+        console.log(`Removed ${afterExclusionCount - finalCount} duplicate shows`);
+      }
       
       // Check for the problematic episode
       const foundExcluded = topPicksShows.some(show => 

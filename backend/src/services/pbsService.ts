@@ -78,8 +78,6 @@ export const getAssets = async (parentId: string, parentType: PBSParentType, ass
   );
 };
 
-// Add this function to pbsService.js
-
 export const getAssetByCID = async (cid: string) => {
   const url = `https://media.services.pbs.org/api/v1/assets/${cid}`;
   const headers = {
@@ -141,6 +139,92 @@ export const findShowByAnyId = async (id: string): Promise<any> => {
     return null;
   } catch (error) {
     console.error(`Error in findShowByAnyId for ID ${id}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Gets the first episode asset ID for a show
+ * This will be used to get recommendations for a show
+ */
+export const getFirstEpisodeAssetId = async (showId: string): Promise<string | null> => {
+  try {
+    console.log(`Getting first episode asset for show ${showId}`);
+    
+    // Step 1: Get the first season
+    const seasonsResponse = await getChildItems(showId, PBS_PARENT_TYPES.SHOW, PBS_CHILD_TYPES.SEASON, { 
+      sort: 'ordinal', 
+      'fetch-related': true 
+    });
+    
+    const firstSeason = seasonsResponse?.data?.[0];
+    if (!firstSeason) {
+      console.log(`No seasons found for show ${showId}`);
+      return null;
+    }
+    
+    console.log(`Found first season ${firstSeason.id} for show ${showId}`);
+    
+    // Check if episodes are already included in the season
+    if (firstSeason.attributes?.episodes && firstSeason.attributes.episodes.length > 0) {
+      const firstEpisodeId = firstSeason.attributes.episodes[0].id;
+      console.log(`Found first episode ${firstEpisodeId} for season ${firstSeason.id}`);
+      
+      // Step 3: Get the episode's assets
+      const assetsResponse = await getChildItems(firstEpisodeId, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
+      
+      const fullLengthAsset = assetsResponse?.data?.find(asset => 
+        asset.attributes?.object_type === 'full_length'
+      );
+      
+      if (fullLengthAsset) {
+        console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisodeId}`);
+        return fullLengthAsset.id;
+      }
+      
+      // If no full-length asset, return the first asset
+      if (assetsResponse?.data?.[0]) {
+        console.log(`No full-length asset found, using first asset ${assetsResponse.data[0].id}`);
+        return assetsResponse.data[0].id;
+      }
+    } else {
+      // Step 2: Get the first episode
+      const episodesResponse = await getChildItems(firstSeason.id, PBS_PARENT_TYPES.SEASON, PBS_CHILD_TYPES.EPISODE, { 
+        sort: 'ordinal',
+        'fetch-related': true
+      });
+      
+      const firstEpisode = episodesResponse?.data?.[0];
+      if (!firstEpisode) {
+        console.log(`No episodes found for season ${firstSeason.id}`);
+        return null;
+      }
+      
+      console.log(`Found first episode ${firstEpisode.id} for season ${firstSeason.id}`);
+      
+      // Step 3: Get the episode's assets
+      const assetsResponse = await getChildItems(firstEpisode.id, PBS_PARENT_TYPES.EPISODE, PBS_CHILD_TYPES.ASSET);
+      
+      const fullLengthAsset = assetsResponse?.data?.find(asset => 
+        asset.attributes?.object_type === 'full_length'
+      );
+      
+      if (fullLengthAsset) {
+        console.log(`Found full-length asset ${fullLengthAsset.id} for episode ${firstEpisode.id}`);
+        return fullLengthAsset.id;
+      }
+      
+      // If no full-length asset, return the first asset
+      if (assetsResponse?.data?.[0]) {
+        console.log(`No full-length asset found, using first asset ${assetsResponse.data[0].id}`);
+        return assetsResponse.data[0].id;
+      }
+    }
+    
+    console.log(`No assets found for show ${showId}`);
+    return null;
+  } catch (error) {
+    console.error(`Error getting first episode asset for show ${showId}:`, error);
     return null;
   }
 };
