@@ -1,42 +1,185 @@
-# PBS Wisconsin Content Recommendation Engine
-A recommendation engine for PBS Wisconsin's WordPress website to improve user experience and engagement on the platform by suggesting national and local content to viewers based on personalized preferences and viewer history.
+# PBS Wisconsin Recommendation Engine
 
-## Tech Used:
+A personalized video streaming platform for PBS Wisconsin that provides recommendations based on user viewing history using AWS Personalize.
 
-Web development was done using **React, Typescript, and the Bootstrap framework** to create the user interface.
-The backend of this application is built using a PHP server.
-The recommendation engine was built using **Machine Learning and AWS (S3, Lambda, Personalize)**
+![PBS Wisconsin](./frontend/public/transparent_logo.png)
 
-## PHP Installation with Homebrew
-1. Install Homebrew (if needed): `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-2. Install PHP: `brew install php`
-3. Verify installation: `php -v`
+## Overview
 
-## Link to the PBS Media Manager php client
-https://github.com/tamw-wnet/PBS_Media_Manager_Client/tree/master
+This application delivers personalized content recommendations to PBS Wisconsin viewers through a Netflix-style interface. The platform integrates with the PBS API for content delivery and AWS Personalize for recommendation generation, analyzing user viewing behavior to suggest relevant content.
 
-## Start the php server
-php -S localhost:8000
+## Features
 
-## Run w/VITE
+- **User Authentication**: Email-based login system that tracks viewing preferences
+- **Content Discovery**: Browse shows by genre with featured content carousels
+- **Personalized Recommendations**: Three recommendation types:
+  - "Top Picks" based on user viewing history
+  - "Because You Watched" for similar content recommendations
+  - "More Like This" for content with similar attributes
+- **Video Playback**: Integrated PBS video player with episode details
+- **Responsive Design**: Optimized for various screen sizes
 
-**$npm install**
+## Tech Stack
 
-**$npm run build**
+### Frontend
+- React.js with TypeScript
+- Redux Toolkit & RTK Query for state management
+- Styled Components for component styling
+- React Bootstrap for UI components
+- React Router for navigation
 
-**$npm run dev**
+### Backend
+- Node.js with Express
+- AWS SDK for Personalize integration
+- PBS API integration for content access
+- CSV parsing for historical data analysis
 
-## EC2 Instance Startup
-ssh -i spring2025team1.pem ec2-user@3.86.235.248
-You have to make a spring2025team1.pem file with the EC2 credentials
-chmod 400 for security
+### Data Processing
+- AWS Personalize for recommendation engine
+- Google Analytics 4 integration for viewing metrics
 
-## Authors:
+## Project Structure
 
-**Camille Forster:** https://github.com/camilleforster
+├── backend/                  # Node.js backend server
+│   ├── src/                  # Source code
+│   │   ├── constants/        # Type definitions and constants
+│   │   ├── routes/           # API routes
+│   │   ├── services/         # Business logic
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── utils/            # Utility functions
+│   │   ├── client.ts         # API client setup
+│   │   └── index.ts          # Entry point
+│   └── package.json          # Backend dependencies
+├── frontend/                 # React frontend
+│   ├── public/               # Static assets
+│   ├── src/                  # Source code
+│   │   ├── assets/           # Images and other assets
+│   │   ├── components/       # React components
+│   │   ├── constants/        # Application constants
+│   │   ├── pages/            # Page components
+│   │   ├── redux/            # Redux store and API slices
+│   │   ├── styled/           # Styled components
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── utils/            # Utility functions
+│   │   ├── App.tsx           # Main App component
+│   │   └── main.tsx          # Entry point
+│   └── package.json          # Frontend dependencies
+└── WPNE_1_Cleaned_Updated.csv # User viewing data for recommendations
 
-**Michael Tran:** https://github.com/michaeltran5
+## How It Works
 
-**Nik Nordquist:** https://github.com/niknordquist
+### User Authentication Flow
+1. Users log in with their email address
+2. The system matches their email to a UID in the user CSV data
+3. User information is stored in browser session storage
+4. Authenticated users receive personalized content recommendations
 
-**Owen Loucks:** https://github.com/owenloucks
+### Content Recommendation System
+The application leverages AWS Personalize to generate three types of recommendations:
+
+1. **Top Picks**: Personalized recommendations based on the user's viewing history
+2. **Because You Watched**: Content similar to a specific show the user has watched
+3. **More Like This**: Items with similar attributes to the current content
+
+### Data Flow
+
+1. **User Data Collection**:
+   - Historical viewing data is loaded from the WPNE CSV file
+   - Real-time viewing events are tracked for future recommendations
+
+2. **API Integration**:
+   - PBS API provides access to content metadata and video assets
+   - Custom backend routes proxy requests to the PBS API
+
+3. **Recommendation Generation**:
+   - AWS Personalize processes user interaction data
+   - Backend services map recommendation IDs to content objects
+
+4. **Content Rendering**:
+   - Frontend components display recommended content in carousels
+   - Video player integrates with PBS's video delivery system
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js (v14 or later)
+- npm or yarn
+- AWS account with Personalize set up
+- PBS API credentials
+
+### Environment Setup
+
+#### Backend
+1. Create a `.env` file in the `backend` directory with:
+PBS_API_BASE_URL=https://media.services.pbs.org/api/v1
+PBS_CLIENT_ID=your_pbs_client_id
+PBS_CLIENT_SECRET=your_pbs_client_secret
+AWS_REGION=us-east-1
+PERSONALIZE_MORE_LIKE_RECOMMENDER_ARN=arn:aws:personalize:region:account-id/more-like-recommender-id
+PERSONALIZE_BECAUSE_YOU_WATCHED_RECOMMENDER_ARN=arn:aws:personalize:region:account-id/because-you-watched-recommender-id
+PERSONALIZE_TOP_PICKS_RECOMMENDER_ARN=arn:aws:personalize:region:account-id/top-picks-recommender-id
+VIEWING_HISTORY_CSV_PATH=../WPNE_1_Cleaned_Updated.csv
+
+#### Frontend
+1. Create a `.env` file in the `frontend` directory with:
+VITE_API_BASE_URL=http://localhost:3000/api
+
+### Installation & Running
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/your-username/pbs-wisconsin-video-portal.git
+cd pbs-wisconsin-video-portal
+Install backend dependencies:
+
+bashcd backend
+npm install
+
+Install frontend dependencies:
+
+bashcd ../frontend
+npm install
+
+Start the backend server:
+
+bashcd ../backend
+npm run dev
+
+Start the frontend development server:
+
+bashcd ../frontend
+npm run dev
+
+The application should be running at http://localhost:5173
+
+Login Instructions
+For testing purposes, use any email address with the domain @example.com (e.g., user1@example.com). The system will check if this email exists in the CSV data and retrieve the corresponding UID.
+AWS Personalize Setup
+To properly use the recommendation features, you'll need to set up AWS Personalize:
+
+Create a dataset group in AWS Personalize
+Import user interaction data from the WPNE CSV file
+Create three solution versions:
+
+Item-to-item similarity for "More Like This"
+User personalization for "Top Picks"
+SIMS or similar algorithm for "Because You Watched"
+
+
+Deploy the solutions as recommenders
+Update the ARNs in your .env file
+
+Contributing
+
+Fork the repository
+Create your feature branch (git checkout -b feature/amazing-feature)
+Commit your changes (git commit -m 'Add some amazing feature')
+Push to the branch (git push origin feature/amazing-feature)
+Open a Pull Request
+
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
+Acknowledgments
+
+PBS Wisconsin for the content and API access
+AWS for the Personalize recommendation engine
