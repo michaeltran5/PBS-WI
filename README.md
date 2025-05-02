@@ -130,55 +130,38 @@ VITE_API_BASE_URL=http://localhost:3000/api
 ```bash
 git clone https://github.com/your-username/pbs-wisconsin-video-portal.git
 cd pbs-wisconsin-video-portal
+```
 Install backend dependencies:
 
-bashcd backend
+bash
+```
+cd backend
 npm install
+```
 
 Install frontend dependencies:
 
-bashcd ../frontend
+bash
+```
+cd ../frontend
 npm install
-
+```
 Start the backend server:
 
-bashcd ../backend
+bash
+```cd ../backend
 npm run dev
+```
 
 Start the frontend development server:
 
-bashcd ../frontend
+bash
+```cd ../frontend
 npm run dev
+```
 
 The application should be running at http://localhost:5173
 
-Login Instructions
-For testing purposes, use any email address with the domain @example.com (e.g., user1@example.com). The system will check if this email exists in the CSV data and retrieve the corresponding UID.
-AWS Personalize Setup
-To properly use the recommendation features, you'll need to set up AWS Personalize:
-
-Create a dataset group in AWS Personalize
-Import user interaction data from the WPNE CSV file
-Create three solution versions:
-
-Item-to-item similarity for "More Like This"
-User personalization for "Top Picks"
-SIMS or similar algorithm for "Because You Watched"
-
-
-Deploy the solutions as recommenders
-Update the ARNs in your .env file
-
-Contributing
-
-Fork the repository
-Create your feature branch (git checkout -b feature/amazing-feature)
-Commit your changes (git commit -m 'Add some amazing feature')
-Push to the branch (git push origin feature/amazing-feature)
-Open a Pull Request
-
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
 Acknowledgments
 
 PBS Wisconsin for the content and API access
