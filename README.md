@@ -38,34 +38,6 @@ This application delivers personalized content recommendations to PBS Wisconsin 
 - AWS Personalize for recommendation engine
 - Google Analytics 4 integration for viewing metrics
 
-## Project Structure
-
-├── backend/                  # Node.js backend server
-│   ├── src/                  # Source code
-│   │   ├── constants/        # Type definitions and constants
-│   │   ├── routes/           # API routes
-│   │   ├── services/         # Business logic
-│   │   ├── types/            # TypeScript type definitions
-│   │   ├── utils/            # Utility functions
-│   │   ├── client.ts         # API client setup
-│   │   └── index.ts          # Entry point
-│   └── package.json          # Backend dependencies
-├── frontend/                 # React frontend
-│   ├── public/               # Static assets
-│   ├── src/                  # Source code
-│   │   ├── assets/           # Images and other assets
-│   │   ├── components/       # React components
-│   │   ├── constants/        # Application constants
-│   │   ├── pages/            # Page components
-│   │   ├── redux/            # Redux store and API slices
-│   │   ├── styled/           # Styled components
-│   │   ├── types/            # TypeScript type definitions
-│   │   ├── utils/            # Utility functions
-│   │   ├── App.tsx           # Main App component
-│   │   └── main.tsx          # Entry point
-│   └── package.json          # Frontend dependencies
-└── WPNE_1_Cleaned_Updated.csv # User viewing data for recommendations
-
 ## How It Works
 
 ### User Authentication Flow
