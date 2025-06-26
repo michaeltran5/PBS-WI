@@ -138,3 +138,6 @@ Acknowledgments
 
 PBS Wisconsin for the content and API access
 AWS for the Personalize recommendation engine
+
+# Demo
+https://youtu.be/ltgFkSSMdxA
